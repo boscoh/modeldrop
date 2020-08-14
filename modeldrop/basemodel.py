@@ -75,7 +75,6 @@ class BaseModel:
                     self.solution[key].append(None)
 
     def scipy_integrate(self):
-
         def func(y, t):
             for v, key in zip(y, self.keys):
                 self.var[key] = v
@@ -92,15 +91,15 @@ class BaseModel:
 
     def chunky_run(self):
         self.reset_solutions()
-        self.times = list(float_range(0, self.param.time, self.param.dt))
         self.init_vars()
+        self.times = list(float_range(0, self.param.time, self.param.dt))
         self.keys = self.var.keys()
         self.crude_integrate()
 
     def run(self):
         self.reset_solutions()
-        self.times = list(float_range(0, self.param.time, self.param.dt))
         self.init_vars()
+        self.times = list(float_range(0, self.param.time, self.param.dt))
         self.keys = list(self.var.keys())
         self.scipy_integrate()
 
@@ -148,7 +147,9 @@ class BaseModel:
         self.calc_aux_var_solutions()
         result = []
         for plot in self.model_plots:
-            graph = self.make_output_graph("plot-" + plot["key"], plot["key"], plot["vars"])
+            graph = self.make_output_graph(
+                "plot-" + plot["key"], plot["key"], plot["vars"]
+            )
             result.append(graph)
         for plot in self.fn_plots:
             graph = self.make_fn_graph("plot-" + plot["fn"], plot["fn"], plot["xlims"])
@@ -180,11 +181,19 @@ def make_sq_fn(A, B, C, D):
     def fn(x):
         num = B - C * x
         return A / num / num - D
+
+    return fn
+
+
+def make_lin_fn(slope, x_zero):
+    def fn(x):
+        return slope * (x - x_zero)
     return fn
 
 
 def make_cutoff_fn(fn, x_max):
     y_max = fn(x_max)
+
     def new_fn(x):
         if x > x_max:
             return y_max
@@ -192,12 +201,14 @@ def make_cutoff_fn(fn, x_max):
         if y > y_max:
             return y_max
         return y
+
     return new_fn
 
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
     import graphing
+
     for graph in PopModel().make_graphs():
         graphing.write_graph(graph)
     os.system("open plot-*.png")

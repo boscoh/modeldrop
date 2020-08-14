@@ -88,14 +88,18 @@ class PropertyModel(BaseModel):
             - self.var.totalInterest
         )
 
-        self.aux_var.fundProfit = self.var.fund - self.param.deposit - self.var.totalRent
+        self.aux_var.fundProfit = (
+            self.var.fund - self.param.deposit - self.var.totalRent
+        )
 
     def calc_dvars(self, t):
         self.calc_aux_vars()
         self.dvar.totalInterest = self.aux_var.interestPaid
         self.dvar.property = self.param.propertyRate * self.var.property
         if self.var.principal >= 0:
-            self.dvar.principal = -(self.aux_var.paymentRate - self.aux_var.interestPaid)
+            self.dvar.principal = -(
+                self.aux_var.paymentRate - self.aux_var.interestPaid
+            )
         else:
             self.dvar.principal = 0
         self.dvar.fund = self.param.fundRate * self.var.fund + self.aux_var.fundChange

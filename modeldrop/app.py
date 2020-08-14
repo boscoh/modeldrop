@@ -55,6 +55,73 @@ def millify(n):
     return "{:.0f}{}".format(n / 10 ** (3 * millidx), millnames[millidx])
 
 
+def get_mark_dict(min_val, max_val):
+    exp = math.floor(math.log10(max_val))
+    step = math.pow(10, exp - 2)
+    if step >= 1:
+        step = int(step)
+
+    mark = (max_val - min_val) / 5.0
+
+    n_sig = -math.floor(math.log10(mark))
+    if n_sig < 0 and step >= 1:
+        n_sig = 0
+    format = f"%.{n_sig}f"
+
+    if abs(1 - mark) < 0.5:
+        format = "%.1f"
+
+    mark_dict = {0: "0"}
+    this_mark = 0
+    while this_mark < max_val:
+        if step >= 1:
+            mark_key = int(this_mark)
+        else:
+            mark_key = float(this_mark)
+        if this_mark > 100:
+            s = millify(mark_key)
+        else:
+            s = format % mark_key
+        mark_dict[mark_key] = s
+        this_mark += mark
+
+    this_mark = 0
+    while this_mark > min_val:
+        if abs(this_mark) >= 1:
+            mark_key = int(this_mark)
+        else:
+            mark_key = float(this_mark)
+        if abs(this_mark) > 100:
+            s = millify(this_mark)
+        else:
+            s = format % this_mark
+        mark_dict[mark_key] = s
+        this_mark -= mark
+
+    logger.info(f"step={step} mark={mark}")
+    logger.info(f"{mark_dict}")
+
+    return step, mark_dict
+
+
+def get_log_mark_dict(min_val, max_val):
+    step = 0.01
+
+    mark_dict = {}
+    for n in range(int(math.floor(min_val)), int(math.floor(max_val)) + 1):
+        if n < 0:
+            format = f"%.{-n}f"
+        else:
+            format = "%.0f"
+        mark_dict[n] = format % math.pow(10, n)
+
+    logger.info(f"min_val={min_val} max_val={max_val}")
+    logger.info(f"step={step} mark={1}")
+    logger.info(f"{mark_dict}")
+
+    return step, mark_dict
+
+
 class DashModelAdaptor(dict):
     def __init__(self, models):
 
@@ -85,7 +152,10 @@ class DashModelAdaptor(dict):
 
             try:
                 for p, val in zip(model.editable_params, values):
-                    model.param[p["key"]] = float(val)
+                    if p.get("is_log10"):
+                        model.param[p["key"]] = float(math.pow(10, val))
+                    else:
+                        model.param[p["key"]] = float(val)
                 logger.info(f"slider_callback run {model.param}")
                 model.run()
                 model.calc_aux_var_solutions()
@@ -135,6 +205,7 @@ class DashModelAdaptor(dict):
         return dbc.DropdownMenu(
             children=menu_items,
             in_navbar=True,
+            nav=True,
             label="Models",
             style={"listStyleType": "none"},
         )
@@ -148,31 +219,34 @@ class DashModelAdaptor(dict):
                         [dbc.Col(dbc.NavbarBrand(self.title, className="ml-2")),],
                         align="center",
                         no_gutters=True,
-                    )
-                ),
-                dbc.NavbarToggler(id="navbar-toggler"),
-                dbc.Collapse(
-                    dbc.Row(
-                        [
-                            dbc.Col(dbc.NavbarBrand(id="counter", className="ml-2")),
-                            dbc.Col(dbc.NavbarBrand(id="pathname", className="ml-2")),
-                        ],
-                        className="ml-auto flex-nowrap mt-3 mt-md-0",
-                        align="center",
-                        no_gutters=True,
                     ),
-                    id="navbar-collapse",
-                    navbar=True,
+                    href="#"
                 ),
+                self.make_models_dropdown_menu(),
+                # html.Br(),
+
+                # dbc.NavbarToggler(id="navbar-toggler"),
+                # dbc.Collapse(
+                #     dbc.Row(
+                #         [
+                #             dbc.Col(dbc.NavbarBrand(id="counter", className="ml-2")),
+                #             dbc.Col(dbc.NavbarBrand(id="pathname", className="ml-2")),
+                #         ],
+                #         className="ml-auto flex-nowrap mt-3 mt-md-0",
+                #         align="center",
+                #         no_gutters=True,
+                #     ),
+                #     id="navbar-collapse",
+                #     navbar=True,
+                # ),
             ],
-            dark=True,
-            color="dark",
+            dark=False,
+            color="white",
+            style={"border-bottom": "1px solid #AAA"}
         )
 
     def make_parameter_div(self):
         children = [
-            self.make_models_dropdown_menu(),
-            html.Br(),
             html.H6("Model Parameters", style={"marginBottom": "1em"}),
         ]
         model = self.model
@@ -182,42 +256,23 @@ class DashModelAdaptor(dict):
             value = model.param[input_key]
 
             my_param = self.get_input_param(input_key)
-            if my_param.get("max") is not None:
-                max_val = my_param["max"]
+
+            max_val = my_param.get("max", value * 5)
+            min_val = my_param.get("min", 0)
+
+            if my_param.get('is_log10'):
+                min_val = math.log10(min_val)
+                max_val = math.log10(max_val)
+                step, mark_dict = get_log_mark_dict(min_val, max_val)
             else:
-                max_val = value * 5
-
-            exp = math.floor(math.log10(max_val))
-            step = math.pow(10, exp - 2)
-
-            mark = max_val / 5.0
-
-            n_sig = -math.floor(math.log10(mark))
-            if n_sig < 0:
-                n_sig = 0
-            format = f"%.{n_sig}f"
-
-            mark_dict = {}
-            this_mark = 0
-            while this_mark < max_val:
-                if this_mark >= 1:
-                    mark_key = int(this_mark)
-                else:
-                    mark_key = this_mark
-                if this_mark > 100:
-                    s = millify(this_mark)
-                else:
-                    s = format % this_mark
-                    mark_key = float(s)
-                mark_dict[mark_key] = s
-                this_mark += mark
+                step, mark_dict = get_mark_dict(min_val, max_val)
 
             children.append(dbc.Label(f"{self.format_param_name(input_key)}"),)
             children.append(
                 html.Div(
                     dcc.Slider(
                         id=p["id"],
-                        min=0,
+                        min=min_val,
                         max=max_val,
                         step=step,
                         marks=mark_dict,
@@ -288,7 +343,6 @@ class DashModelAdaptor(dict):
                         "title": f"{self.format_param_name(key)}",
                         "yaxis": {"range": [min_y, max_y]},
                     },
-
                 },
             )
             children.append(graph)
@@ -355,7 +409,7 @@ class DashModelAdaptor(dict):
                     sm=5,
                     style={
                         "borderRight": "1px solid #CCC",
-                        "backgroundColor": "#EEE",
+                        # "backgroundColor": "#EEE",
                         "overflow": "scroll",
                         "paddingLeft": "20px",
                         "boxSizing": "border-box",
@@ -456,9 +510,7 @@ def open_url_in_background(url, sleep_in_s=1):
             except:
                 time.sleep(sleep_in_s)
                 elapsed += sleep_in_s
-                logger.info("Waiting", elapsed, "s for", url, " on server")
+                logger.info(f"Waiting {elapsed}s for {url} on server")
 
     # creates a thread to poll server before opening client
     threading.Thread(target=inner).start()
-
-

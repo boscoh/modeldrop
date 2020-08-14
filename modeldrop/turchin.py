@@ -1,10 +1,4 @@
-import logging
-
-from modeldrop.app import DashModelAdaptor, open_url_in_background
-from modeldrop.basemodel import BaseModel
-from modeldrop.goodwin import GoodwinModel
-from modeldrop.keen import KeenModel
-from modeldrop.property import PropertyModel
+from .basemodel import BaseModel
 
 
 class DemographicFiscalModel(BaseModel):
@@ -19,11 +13,17 @@ class DemographicFiscalModel(BaseModel):
         self.param.expenditurePerCapita = 0.25
         self.param.stateAtHalfCapacity = 10
         self.param.carryCapacityDiff = 3
-        self.fns.carryCapacityFromStateRevenue = lambda state: (
-            1
-            + self.param.carryCapacityDiff
-            * (state / (self.param.stateAtHalfCapacity + state))
-        )
+
+        def fn(state):
+            if state < 0:
+                return 1
+            return (
+                1
+                + self.param.carryCapacityDiff
+                * (state / (self.param.stateAtHalfCapacity + state))
+            )
+
+        self.fns.carryCapacityFromStateRevenue = fn
 
         self.model_plots = [
             {
@@ -51,8 +51,7 @@ class DemographicFiscalModel(BaseModel):
         self.init_var.state = 0
 
     def calc_aux_vars(self):
-        s = self.var.state if self.var.state > 0 else 0
-        self.aux_var.carryingCapacity = self.fns.carryCapacityFromStateRevenue(s)
+        self.aux_var.carryingCapacity = self.fns.carryCapacityFromStateRevenue(self.var.state)
         self.aux_var.surplus = self.param.maxSurplus * (
             1 - self.var.populationDensity / self.aux_var.carryingCapacity
         )
@@ -66,12 +65,6 @@ class DemographicFiscalModel(BaseModel):
             self.param.taxOnSurplus * self.var.populationDensity * self.aux_var.surplus
             - self.param.expenditurePerCapita * self.var.populationDensity
         )
-        if self.var.state < 0 and self.dvar.state <= 0:
-            self.dvar.state = 0
-            self.var.state = 0
-
-# logging.basicConfig(level=logging.DEBUG)
-models = [DemographicFiscalModel(), PropertyModel(), KeenModel(), GoodwinModel()]
-port = "8050"
-open_url_in_background(f"http://127.0.0.1:{port}/")
-DashModelAdaptor(models).run_server(port=port)
+        # if self.var.state <= 0 and self.dvar.state <= 0:
+        #     self.dvar.state = 0
+        #     self.var.state = 0

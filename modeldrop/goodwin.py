@@ -31,15 +31,16 @@ class GoodwinModel(BaseModel):
             {"fn": "wageChange", "xlims": [0.8, 0.9999]},
         ]
 
-        laborShare = 0.9
         self.init_var.wage = 0.95
         self.init_var.productivity = 1
         self.init_var.population = 50
+        laborShare = 0.9
         self.init_var.labor = laborShare * self.init_var.population
 
     def calc_aux_vars(self):
         self.aux_var.laborShare = self.var.labor / self.var.population
         self.aux_var.output = self.var.labor * self.var.productivity
+        self.aux_var.capital = self.aux_var.output * self.param.accelerator
         self.aux_var.wages = self.var.labor * self.var.wage
 
     def calc_dvars(self, t):
