@@ -2,11 +2,8 @@ from .basemodel import BaseModel
 
 
 class DemographicFiscalModel(BaseModel):
-    def __init__(self):
-        super().__init__({})
-
+    def setup(self):
         self.param.time = 500
-        # self.param.carryingCapacityLimit = 1
         self.param.maxSurplus = 1
         self.param.taxOnSurplus = 1
         self.param.growth = 0.02
@@ -14,7 +11,7 @@ class DemographicFiscalModel(BaseModel):
         self.param.stateAtHalfCapacity = 10
         self.param.carryCapacityDiff = 3
 
-        def fn(state):
+        def carryCapacityFromStateRevenue(state):
             if state < 0:
                 return 1
             return (
@@ -23,7 +20,7 @@ class DemographicFiscalModel(BaseModel):
                 * (state / (self.param.stateAtHalfCapacity + state))
             )
 
-        self.fns.carryCapacityFromStateRevenue = fn
+        self.fns.carryCapacityFromStateRevenue = carryCapacityFromStateRevenue
 
         self.model_plots = [
             {
@@ -44,7 +41,6 @@ class DemographicFiscalModel(BaseModel):
             {"key": "maxSurplus", "max": 2,},
             {"key": "taxOnSurplus", "max": 2,},
             {"key": "growth", "max": 0.1,},
-            # {"key": "carryingCapacityLimit", "max": 2,},
         ]
 
         self.init_var.populationDensity = 0.2
@@ -65,6 +61,3 @@ class DemographicFiscalModel(BaseModel):
             self.param.taxOnSurplus * self.var.populationDensity * self.aux_var.surplus
             - self.param.expenditurePerCapita * self.var.populationDensity
         )
-        # if self.var.state <= 0 and self.dvar.state <= 0:
-        #     self.dvar.state = 0
-        #     self.var.state = 0

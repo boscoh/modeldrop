@@ -1,10 +1,8 @@
-import math
-from .basemodel import BaseModel, float_range, make_cutoff_fn, make_lin_fn, make_exp_fn, make_sq_fn
+from .basemodel import BaseModel, make_cutoff_fn, make_lin_fn, make_exp_fn, make_sq_fn
 
 
 class KeenModel(BaseModel):
-    def __init__(self):
-        super().__init__({})
+    def setup(self):
         self.param.time = 150
         self.param.dt = 0.1
         self.param.timeStep = -1

@@ -490,11 +490,11 @@ class DashModelAdaptor(dict):
             inputs = [Input(p["id"], "value") for p in model.editable_params]
             app.callback(outputs, inputs)(model.slider_callback)
 
-    def run_server(self, port=8050):
+    def run_server(self, port=8050, is_debug=True):
         self.app = Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
         self.app.layout = self.make_layout()
         self.register_callbacks(self.app)
-        self.app.run_server(debug=True, port=port)
+        self.app.run_server(debug=is_debug, port=port)
 
 
 def open_url_in_background(url, sleep_in_s=1):

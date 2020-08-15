@@ -12,8 +12,7 @@ logger = logging.getLogger(__name__)
 
 
 class PropertyModel(BaseModel):
-    def __init__(self):
-        super().__init__({})
+    def setup(self):
         self.param.initialProperty = 600000
         self.param.deposit = 150000
         self.param.interestRate = 0.05

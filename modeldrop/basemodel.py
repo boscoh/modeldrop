@@ -1,6 +1,5 @@
 import logging
 import math
-import os
 
 from scipy.integrate import odeint
 
@@ -20,10 +19,11 @@ def float_range(start, stop, step):
 
 
 class BaseModel:
-    def __init__(self, param):
+    def __init__(self, param=None):
         self.param = AttrDict()
-        for k, v in param.items():
-            self.param[k] = v
+        if param is not None:
+            for k, v in param.items():
+                self.param[k] = v
 
         self.init_var = AttrDict()
 
@@ -40,6 +40,11 @@ class BaseModel:
         self.editable_params = []
         self.model_plots = []
         self.fn_plots = []
+
+        self.setup()
+
+    def setup(self):
+        pass
 
     def reset_solutions(self):
         self.solution.clear()
@@ -157,20 +162,6 @@ class BaseModel:
         return result
 
 
-class PopModel(BaseModel):
-    def __init__(self):
-        super().__init__({})
-        self.param.population_exponent = 0.035
-        self.param.time = 200
-        self.model_plots = [
-            {"key": "People", "vars": ["population"]},
-        ]
-        self.init_var.population = 10
-
-    def calc_dvars(self, t):
-        self.dvar.population = self.param.population_exponent * self.var.population
-
-
 def make_exp_fn(x_val, y_val, scale, y_min):
     y_diff = y_val - y_min
     return lambda x: y_diff * math.exp((scale * (x - x_val)) / y_diff) + y_min
@@ -205,10 +196,3 @@ def make_cutoff_fn(fn, x_max):
     return new_fn
 
 
-if __name__ == "__main__":
-    logging.basicConfig(level=logging.INFO)
-    import graphing
-
-    for graph in PopModel().make_graphs():
-        graphing.write_graph(graph)
-    os.system("open plot-*.png")

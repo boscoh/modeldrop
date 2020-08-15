@@ -1,20 +1,24 @@
-import logging
-import os
-
-from .basemodel import BaseModel, float_range, make_cutoff_fn, make_exp_fn, make_sq_fn
+from .basemodel import BaseModel, make_cutoff_fn, make_sq_fn
 
 
 class GoodwinModel(BaseModel):
-    def __init__(self):
-        super().__init__({})
+    def setup(self):
         self.param.accelerator = 3
         self.param.depreciation = 0.01
         self.param.productivityRate = 0.02
         self.param.birthRate = 0.01
         self.param.time = 100
         self.param.dt = 0.1
+
         wageSqFn = make_sq_fn(0.000_064_1, 1, 1, 0.040_064_1)
         self.fns.wageChange = make_cutoff_fn(wageSqFn, 0.9999)
+
+        self.init_var.wage = 0.95
+        self.init_var.productivity = 1
+        self.init_var.population = 50
+        laborShare = 0.9
+        self.init_var.labor = laborShare * self.init_var.population
+
         self.editable_params = [
             {"key": "time", "max": 500,},
             {"key": "birthRate", "max": 0.1,},
@@ -30,12 +34,6 @@ class GoodwinModel(BaseModel):
         self.fn_plots = [
             {"fn": "wageChange", "xlims": [0.8, 0.9999]},
         ]
-
-        self.init_var.wage = 0.95
-        self.init_var.productivity = 1
-        self.init_var.population = 50
-        laborShare = 0.9
-        self.init_var.labor = laborShare * self.init_var.population
 
     def calc_aux_vars(self):
         self.aux_var.laborShare = self.var.labor / self.var.population
