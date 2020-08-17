@@ -92,7 +92,6 @@ class PropertyModel(BaseModel):
         )
 
     def calc_dvars(self, t):
-        self.calc_aux_vars()
         self.dvar.totalInterest = self.aux_var.interestPaid
         self.dvar.property = self.param.propertyRate * self.var.property
         if self.var.principal >= 0:

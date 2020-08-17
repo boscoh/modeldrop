@@ -54,11 +54,13 @@ an exploration of the different properties of the model.
 
     AttrDict
     
-    this.var
-    this.initVar
-    this.dVar
-    this.param
-    this.auxVar
+    this.var - are driving variables and are always accompained with
+               a dvar
+    this.dvar - holds the changes to the correspond var
+    this.aux_var - any extra variables that are calculated to help
+              calculate other var or other dvar
+    this.init_var - the inital vale of a var for recalculation
+    this.param - key parameter values that change the model
 
 #### The plots
 
@@ -75,3 +77,4 @@ The second is a pipe into plotly using dash.
     self.fn_plots = [
         {"fn": "wageChange", "xlims": [0.8, 0.9999]},
     ]
+

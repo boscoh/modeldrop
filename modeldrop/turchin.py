@@ -53,7 +53,6 @@ class DemographicFiscalModel(BaseModel):
         )
 
     def calc_dvars(self, t):
-        self.calc_aux_vars()
         self.dvar.populationDensity = (
             self.param.growth * self.var.populationDensity * self.aux_var.surplus
         )

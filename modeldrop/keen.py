@@ -88,8 +88,6 @@ class KeenModel(BaseModel):
         self.aux_var.borrow = self.aux_var.investment - self.aux_var.profit
 
     def calc_dvars(self, t):
-        self.calc_aux_vars()
-
         self.dvar.wage = self.aux_var.wageDelta * self.var.wage
     
         self.dvar.productivity = self.param.productivityRate * self.var.productivity
