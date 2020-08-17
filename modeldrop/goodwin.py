@@ -42,7 +42,6 @@ class GoodwinModel(BaseModel):
         self.aux_var.wages = self.var.labor * self.var.wage
 
     def calc_dvars(self, t):
-        self.calc_aux_vars()
         self.dvar.labor = self.var.labor * (
             (1 - self.var.wage / self.var.productivity) / self.param.accelerator
             - self.param.depreciation

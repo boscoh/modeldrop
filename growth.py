@@ -9,6 +9,9 @@ class PopModel(BaseModel):
         self.model_plots = [
             {"key": "people", "vars": ["population"]},
         ]
+        self.editable_params = [
+            {"key": "population_exponent", "max": 0.1,},
+        ]
 
     def calc_dvars(self, t):
         self.dvar.population = self.param.population_exponent * self.var.population

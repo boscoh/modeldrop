@@ -1,6 +1,13 @@
 import logging
 import math
 
+__doc__ = """
+"""
+
+# TODO: check editable parameters
+# TODO: check plots
+# TODO: check dvars and vars match
+
 from scipy.integrate import odeint
 
 logger = logging.getLogger(__name__)
@@ -33,8 +40,10 @@ class BaseModel:
 
         self.fns = AttrDict()
 
+        self.param.time = 100
         self.param.dt = 1
         self.times = None
+
         self.solution = AttrDict()
 
         self.editable_params = []
@@ -80,21 +89,22 @@ class BaseModel:
                     self.solution[key].append(None)
 
     def scipy_integrate(self):
-        def func(y, t):
-            for v, key in zip(y, self.keys):
+        def calc_dvar_array(var_array, t):
+            for v, key in zip(var_array, self.keys):
                 self.var[key] = v
+            self.calc_aux_vars()
             self.calc_dvars(t)
-            dVar = [self.dvar[k] for k in self.keys]
-            return dVar
+            return [self.dvar[k] for k in self.keys]
 
         y_init = [self.var[key] for key in self.keys]
 
-        self.output, info_dict = odeint(func, y_init, self.times, full_output=True)
+        self.output, info_dict = odeint(calc_dvar_array, y_init, self.times, full_output=True)
 
         for i, key in enumerate(self.keys):
             self.solution[key] = self.output[:, i]
 
     def chunky_run(self):
+        self.check_consistency()
         self.reset_solutions()
         self.init_vars()
         self.times = list(float_range(0, self.param.time, self.param.dt))
@@ -102,6 +112,7 @@ class BaseModel:
         self.crude_integrate()
 
     def run(self):
+        self.check_consistency()
         self.reset_solutions()
         self.init_vars()
         self.times = list(float_range(0, self.param.time, self.param.dt))
@@ -161,6 +172,42 @@ class BaseModel:
             result.append(graph)
         return result
 
+    def check_consistency(self):
+        self.init_vars()
+        self.calc_aux_vars()
+        self.calc_dvars(0)
+
+        for v in self.var:
+            if v not in self.dvar:
+                raise Exception(f'var {v} has no matching dvar in self.calc_dvar')
+
+        for v in self.dvar:
+            if v not in self.var:
+                raise Exception(f'dvar {v} has no matching var for self.init_var')
+
+        for p in self.model_plots:
+            for v in p["vars"]:
+                if v not in self.var and v not in self.aux_var:
+                    raise Exception(f'plot {p["key"]} has var {v} not in self.vars nor in self.aux_vars')
+
+        for p in self.editable_params:
+            if p["key"] not in self.param:
+                raise Exception(f'editable param {p["key"]} not in self.param')
+
+    def extract_editable_params(self):
+        for k in self.param:
+            if k == "dt":
+                continue
+            if not is_key_in_list(self.editable_params, key=k):
+                val = self.param[k]
+                if val > 0:
+                    val = 5 * val
+                elif val == 0:
+                    val = 1
+                else:
+                    raise Exception("Can't handle negative param")
+                self.editable_params.append({"key": k, "max": val})
+
 
 def make_exp_fn(x_val, y_val, scale, y_min):
     y_diff = y_val - y_min
@@ -196,3 +243,9 @@ def make_cutoff_fn(fn, x_max):
     return new_fn
 
 
+def is_key_in_list(p_list, **kwargs):
+    for p in p_list:
+        for k, v in kwargs.items():
+            if p[k] == v:
+                return True
+    return False

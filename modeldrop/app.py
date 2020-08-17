@@ -64,17 +64,17 @@ def get_mark_dict(min_val, max_val):
     mark = (max_val - min_val) / 5.0
 
     n_sig = -math.floor(math.log10(mark))
-    if n_sig < 0 and step >= 1:
+    if n_sig < 0 or mark >= 1:
         n_sig = 0
     format = f"%.{n_sig}f"
 
-    if abs(1 - mark) < 0.5:
-        format = "%.1f"
+    # if abs(1 - mark) < 0.5:
+    #     format = "%.1f"
 
     mark_dict = {0: "0"}
     this_mark = 0
     while this_mark < max_val:
-        if step >= 1:
+        if mark >= 1:
             mark_key = int(this_mark)
         else:
             mark_key = float(this_mark)
@@ -87,7 +87,7 @@ def get_mark_dict(min_val, max_val):
 
     this_mark = 0
     while this_mark > min_val:
-        if abs(this_mark) >= 1:
+        if abs(mark) >= 1:
             mark_key = int(this_mark)
         else:
             mark_key = float(this_mark)
@@ -98,7 +98,7 @@ def get_mark_dict(min_val, max_val):
         mark_dict[mark_key] = s
         this_mark -= mark
 
-    logger.info(f"step={step} mark={mark}")
+    logger.info(f"format={format} step={step} mark={mark}")
     logger.info(f"{mark_dict}")
 
     return step, mark_dict
@@ -138,6 +138,9 @@ class DashModelAdaptor(dict):
             for p in model.model_plots:
                 p["id"] = model.prefix + "-" + p["key"]
 
+            for p in model.fn_plots:
+                p["id"] = model.prefix + "-" + p["fn"]
+
             model.slider_callback = self.make_model_slider_callback(model)
 
         self.choose_model(0)
@@ -165,7 +168,7 @@ class DashModelAdaptor(dict):
                 logger.info(f"slider_callback exception: {e}...")
                 figures = [
                     {"data": {"x": [], "y": [], "type": "scatter"}}
-                    for i in len(model.model_plots)
+                    for i in range(len(model.model_plots) + len(model.fn_plots))
                 ]
 
             self.is_running = False
@@ -214,35 +217,18 @@ class DashModelAdaptor(dict):
         return dbc.Navbar(
             [
                 html.A(
-                    # Use row and col to control vertical alignment of logo / brand
                     dbc.Row(
                         [dbc.Col(dbc.NavbarBrand(self.title, className="ml-2")),],
                         align="center",
                         no_gutters=True,
                     ),
-                    href="#"
+                    href="#",
                 ),
                 self.make_models_dropdown_menu(),
-                # html.Br(),
-
-                # dbc.NavbarToggler(id="navbar-toggler"),
-                # dbc.Collapse(
-                #     dbc.Row(
-                #         [
-                #             dbc.Col(dbc.NavbarBrand(id="counter", className="ml-2")),
-                #             dbc.Col(dbc.NavbarBrand(id="pathname", className="ml-2")),
-                #         ],
-                #         className="ml-auto flex-nowrap mt-3 mt-md-0",
-                #         align="center",
-                #         no_gutters=True,
-                #     ),
-                #     id="navbar-collapse",
-                #     navbar=True,
-                # ),
             ],
             dark=False,
             color="white",
-            style={"border-bottom": "1px solid #AAA"}
+            style={"border-bottom": "1px solid #AAA"},
         )
 
     def make_parameter_div(self):
@@ -260,7 +246,9 @@ class DashModelAdaptor(dict):
             max_val = my_param.get("max", value * 5)
             min_val = my_param.get("min", 0)
 
-            if my_param.get('is_log10'):
+            logger.info(f"key={input_key}")
+
+            if my_param.get("is_log10"):
                 min_val = math.log10(min_val)
                 max_val = math.log10(max_val)
                 step, mark_dict = get_log_mark_dict(min_val, max_val)
@@ -315,34 +303,15 @@ class DashModelAdaptor(dict):
             children.append(graph)
 
         for fn_plot in self.model.fn_plots:
-            xlims = fn_plot["xlims"]
-            key = fn_plot["fn"]
-            xdiff = xlims[1] - xlims[0]
-            exp = math.floor(math.log10(xdiff))
-            step = math.pow(10, exp - 2)
-            this_x = xlims[0]
-            x_vals = []
-            while this_x <= xlims[1]:
-                x_vals.append(this_x)
-                this_x += step
-            fn = model.fns[key]
-            y_vals = list(map(fn, x_vals))
-            min_y = min(y_vals)
-            max_y = max(y_vals)
-            if fn_plot.get("ymin") is not None:
-                min_y = fn_plot["ymin"]
             graph = dcc.Graph(
-                id=key,
+                id=fn_plot["id"],
                 config={"responsive": True},
                 style={"height": "405px"},
-                figure={
-                    "data": [
-                        {"x": x_vals, "y": y_vals, "type": "scatter", "name": key,}
-                    ],
-                    "layout": {
-                        "title": f"{self.format_param_name(key)}",
-                        "yaxis": {"range": [min_y, max_y]},
-                    },
+                animate=True,
+                animation_options={
+                    "frame": {"redraw": False, "duration": 1000},
+                    "easing": "cubic-in-out",
+                    "transition": {"duration": 500},
                 },
             )
             children.append(graph)
@@ -385,7 +354,12 @@ class DashModelAdaptor(dict):
             max_y = max(all_y_vals)
 
             if model_plot.get("ymin") is not None:
-                min_y = model_plot["ymin"]
+                if min_y < model_plot["ymin"]:
+                    min_y = model_plot["ymin"]
+
+            if model_plot.get("ymax") is not None:
+                if max_y > model_plot["ymax"]:
+                    max_y = model_plot["ymax"]
 
             figure = {
                 "data": data,
@@ -396,6 +370,39 @@ class DashModelAdaptor(dict):
                 },
             }
             result.append(figure)
+
+        for fn_plot in self.model.fn_plots:
+            xlims = fn_plot["xlims"]
+            xdiff = xlims[1] - xlims[0]
+            exp = math.floor(math.log10(xdiff))
+            step = math.pow(10, exp - 2)
+            this_x = xlims[0]
+            x_vals = []
+            while this_x <= xlims[1]:
+                x_vals.append(this_x)
+                this_x += step
+
+            key = fn_plot["fn"]
+            fn = model.fns[key]
+            y_vals = list(map(fn, x_vals))
+
+            min_y = min(y_vals)
+            max_y = max(y_vals)
+            if fn_plot.get("ymin") is not None:
+                min_y = fn_plot["ymin"]
+
+            data = [{"x": x_vals, "y": y_vals, "type": "scatter", "name": key,}]
+
+            result.append(
+                {
+                    "data": data,
+                    "layout": {
+                        "title": f"{self.format_param_name(key)}",
+                        "yaxis": {"range": [min_y, max_y]},
+                    },
+                }
+            )
+
         return result
 
     def make_content_children(self):
@@ -486,7 +493,9 @@ class DashModelAdaptor(dict):
                 return n_intervals
 
         for model in self.models:
-            outputs = [Output(p["id"], "figure") for p in model.model_plots]
+            outputs = [Output(p["id"], "figure") for p in model.model_plots] + [
+                Output(p["id"], "figure") for p in model.fn_plots
+            ]
             inputs = [Input(p["id"], "value") for p in model.editable_params]
             app.callback(outputs, inputs)(model.slider_callback)
 
@@ -510,7 +519,7 @@ def open_url_in_background(url, sleep_in_s=1):
             except:
                 time.sleep(sleep_in_s)
                 elapsed += sleep_in_s
-                logger.info(f"Waiting {elapsed}s for {url} on server")
+                logger.info(f"open_url_in_background: waited {elapsed}s for {url}...")
 
     # creates a thread to poll server before opening client
     threading.Thread(target=inner).start()
