@@ -11,59 +11,47 @@ class EpiModel(BaseModel):
         self.param.recoverRate = 0.1
         self.param.reproductionNumber = 1.5
         self.param.infectiousPeriod = 10
+
         self.setup_plots()
+        self.setup_flows()
 
     def init_vars(self):
         self.param.recoverRate = 1 / self.param.infectiousPeriod
-        self.param.contactRate = (
-            self.param.reproductionNumber * self.param.recoverRate)
+        self.param.contactRate = self.param.reproductionNumber * self.param.recoverRate
 
         self.var.infectious = self.param.initialPrevalence
         self.var.susceptible = (
-            self.param.initialPopulation - self.param.initialPrevalence)
+            self.param.initialPopulation - self.param.initialPrevalence
+        )
         self.var.recovered = 0
-        
+
     def calc_aux_vars(self):
         self.aux_var.population = sum(self.var.values())
         self.aux_var.rateForce = (
-            (self.param.contactRate / self.aux_var.population) *
-            self.var.infectious)
+            self.param.contactRate / self.aux_var.population
+        ) * self.var.infectious
         self.aux_var.rn = (
-            (self.var.susceptible / self.aux_var.population) *
-            self.param.reproductionNumber)
+            self.var.susceptible / self.aux_var.population
+        ) * self.param.reproductionNumber
+
+    def setup_flows(self):
+        self.aux_var_flows = [['susceptible', 'infectious', 'rateForce']]
+        self.param_flows = [['infectious', 'recovered', 'recoverRate']]
 
     def calc_dvars(self, t):
-        self.dvar.susceptible = (
-            - self.var.susceptible * self.aux_var.rateForce
-        )
-        self.dvar.infectious = (
-            - self.var.infectious * self.param.recoverRate
-            + self.var.susceptible * self.aux_var.rateForce
-        )
-        self.dvar.recovered = (
-            + self.var.infectious * self.param.recoverRate
-        )
+        self.calc_dvars_from_flows()
 
     def setup_plots(self):
         self.model_plots = [
-            {"key": "compartments", "vars": ["susceptible", "infectious", "recovered"]}
+            {"key": "compartments", "vars": ["susceptible", "infectious", "recovered"]},
+            {"key": "Effective Rn", "vars": ["rn"]}
         ]
         self.editable_params = [
-            {
-                "key": 'infectiousPeriod',
-                "max": 100,
-                "label": 'Infectious Period (days)',
-            },
-            {
-                "key": 'initialPrevalence',
-                "max": 100000,
-                "label": 'Prevalence',
-            },
-            {
-                "key": 'initialPopulation',
-                "max": 100000,
-                "label": 'Initial Population',
-            },
+            {"key": "time", "max": 1000,},
+            {"key": "infectiousPeriod", "max": 100,},
+            {"key": "reproductionNumber", "max": 25},
+            {"key": "initialPrevalence", "max": 100000},
+            {"key": "initialPopulation", "max": 100000},
         ]
 
 
@@ -87,4 +75,3 @@ if __name__ == "__main__":
     # os.system("open plot-*.png")
 
     show_models([model], sys.argv)
-

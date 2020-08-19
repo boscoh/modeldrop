@@ -15,17 +15,6 @@ class KeenModel(BaseModel):
         self.param.initialLaborFraction = 0.61
         self.param.interestRate = 0.04
 
-        wageSqFn = make_sq_fn(0.000_064_1, 1, 1, 0.040_064_1)
-        self.fns.wageFn = make_cutoff_fn(wageSqFn, 0.9999)
-        investSqFn = make_sq_fn(0.0175, 0.53, 6, 0.065)
-        self.fns.investFn = make_cutoff_fn(investSqFn, 0.0829999999)
-
-        self.fns.wageFn = make_exp_fn(0.95, 0.0, 0.5, -0.01)
-        self.fns.investFn = make_exp_fn(0.05, 0.05, 1.75, 0)
-
-        self.fns.wageFn = make_lin_fn(4, 0.6)
-        self.fns.investFn = make_lin_fn(10, 0.03)
-
         self.editable_params = [
             {"key": "time", "max": 300,},
             {"key": "timeStep", "max": 10, "min": 0.001, "is_log10": True},
@@ -50,9 +39,18 @@ class KeenModel(BaseModel):
         ]
 
     def init_vars(self):
+        self.fns.wageFn = make_cutoff_fn(make_sq_fn(0.000_064_1, 1, 1, 0.040_064_1), 0.9999)
+        self.fns.wageFn = make_exp_fn(0.95, 0.0, 0.5, -0.01)
+        self.fns.wageFn = make_lin_fn(4, 0.6)
+
+        self.fns.investFn = make_cutoff_fn(make_sq_fn(0.0175, 0.53, 6, 0.065), 0.0829999999)
+        self.fns.investFn = make_exp_fn(0.05, 0.05, 1.75, 0)
+        self.fns.investFn = make_lin_fn(10, 0.03)
+
+        self.param.dt = self.param.timeStep
+
         self.var.wage = self.param.initialWage
         self.var.productivity = 1
-        self.param.dt = self.param.timeStep
         self.var.population = 100
         self.var.laborFraction = self.param.initialLaborFraction
         self.var.output = self.param.initialLaborFraction * self.var.population * self.var.productivity
