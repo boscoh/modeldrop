@@ -294,7 +294,7 @@ class DashModelAdaptor(dict):
         )
 
     def make_graphs_div(self):
-        children = [html.Br(), html.H3("Graphs")]
+        children = [html.Br(), html.H6("Graphs")]
         model = self.model
         logger.info(f"make_graphs_div {model.name}")
 
@@ -310,6 +310,7 @@ class DashModelAdaptor(dict):
                     "transition": {"duration": 500},
                 },
             )
+            children.append(html.Div(model_plot['key']))
             children.append(graph)
 
         for fn_plot in self.model.fn_plots:
@@ -324,6 +325,7 @@ class DashModelAdaptor(dict):
                     "transition": {"duration": 500},
                 },
             )
+            children.append(html.Div(self.format_param_name(fn_plot['fn'])))
             children.append(graph)
         return html.Div(children=children)
 
@@ -374,7 +376,8 @@ class DashModelAdaptor(dict):
             figure = {
                 "data": data,
                 "layout": {
-                    "title": f"{model_plot['key']}",
+                    "margin": {"t":40},
+                    # "title": f"{model_plot['key']}",
                     "xaxis": {"range": [min_x, max_x]},
                     "yaxis": {"range": [min_y, max_y]},
                 },
@@ -405,7 +408,8 @@ class DashModelAdaptor(dict):
             figure = {
                 "data": data,
                 "layout": {
-                    "title": f"{self.format_param_name(key)}",
+                    "margin": {"t": 40},
+                    # "title": f"{self.format_param_name(key)}",
                     "yaxis": {"range": [min_y, max_y]},
                 },
             }

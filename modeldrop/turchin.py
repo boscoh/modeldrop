@@ -1,7 +1,7 @@
 from .basemodel import BaseModel
 
 
-class DemographicFiscalModel(BaseModel):
+class TurchinDemographicStateModel(BaseModel):
     def setup(self):
         self.param.time = 500
         self.param.maxSurplus = 1

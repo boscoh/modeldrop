@@ -4,7 +4,7 @@ from modeldrop.basemodel import BaseModel
 from modeldrop.app import DashModelAdaptor, open_url_in_background
 
 
-class EpiModel(BaseModel):
+class EpidemiologySirModel(BaseModel):
     def setup(self):
         self.param.initialPopulation = 50000
         self.param.initialPrevalence = 3000
@@ -70,7 +70,7 @@ if __name__ == "__main__":
 
     logging.basicConfig(level=logging.DEBUG)
 
-    model = EpiModel()
+    model = EpidemiologySirModel()
 
     # for graph in model.make_graphs():
     #     graphing.write_graph(graph)
