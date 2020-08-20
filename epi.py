@@ -39,7 +39,9 @@ class EpiModel(BaseModel):
         self.param_flows = [['infectious', 'recovered', 'recoverRate']]
 
     def calc_dvars(self, t):
-        self.calc_dvars_from_flows()
+        for key in self.var.keys():
+            self.dvar[key] = 0
+        self.add_to_dvars_from_flows()
 
     def setup_plots(self):
         self.model_plots = [
