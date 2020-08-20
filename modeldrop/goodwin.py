@@ -1,7 +1,7 @@
 from .basemodel import BaseModel, make_cutoff_fn, make_sq_fn
 
 
-class GoodwinModel(BaseModel):
+class GoodwinBusinessCycleModel(BaseModel):
     def setup(self):
         self.param.accelerator = 3
         self.param.depreciation = 0.01
@@ -50,9 +50,9 @@ class GoodwinModel(BaseModel):
         ]
 
         self.model_plots = [
-            {"key": "People", "vars": ["population", "labor"]},
-            {"key": "Output", "vars": ["output", "wages"]},
             {"key": "Share", "vars": ["wageShare", "profitShare"]},
+            {"key": "Output", "vars": ["output", "wages"]},
+            {"key": "People", "vars": ["population", "labor"]},
         ]
         self.fn_plots = [
             {"fn": "wageChange", "xlims": [0.8, 0.9999]},

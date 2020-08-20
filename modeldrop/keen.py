@@ -1,7 +1,7 @@
 from .basemodel import BaseModel, make_cutoff_fn, make_lin_fn, make_exp_fn, make_sq_fn
 
 
-class KeenModel(BaseModel):
+class KeenDynamicEconomyModel(BaseModel):
     def setup(self):
         self.param.time = 150
         self.param.dt = 0.1
@@ -122,4 +122,4 @@ class KeenModel(BaseModel):
         ]
 
 if __name__ == "__main__":
-    KeenModel().make_graph_pngs(is_open=True)
+    KeenDynamicEconomyModel().make_graph_pngs(is_open=True)

@@ -119,7 +119,7 @@ class BaseModel:
                 val = self.param[param_key] * self.var[from_key]
                 flows.append([from_key, to_key, val])
 
-        if len(self.flows):
+        if len(flows):
             for (from_key, to_key, val) in flows:
                 self.dvar[from_key] -= val
                 self.dvar[to_key] += val

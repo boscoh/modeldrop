@@ -4,9 +4,10 @@ from modeldrop.basemodel import BaseModel
 from modeldrop.app import DashModelAdaptor, open_url_in_background
 
 
-class Ecology(BaseModel):
+class LoktaVolterraEcologyModel(BaseModel):
     def setup(self):
         self.param.time = 200
+        self.param.dt = 0.2
         self.param.initialPrey = 10
         self.param.initialPredator = 5
         self.param.preyGrowthRate = 0.2
@@ -58,7 +59,7 @@ if __name__ == "__main__":
 
     logging.basicConfig(level=logging.DEBUG)
 
-    model = Ecology()
+    model = LoktaVolterraEcologyModel()
 
     # for graph in model.make_graphs():
     #     graphing.write_graph(graph)

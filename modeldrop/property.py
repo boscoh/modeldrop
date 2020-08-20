@@ -11,7 +11,7 @@ def get_min_payment(principal, rate, n_payment):
 logger = logging.getLogger(__name__)
 
 
-class PropertyModel(BaseModel):
+class PropertyVsFundInvestmentModel(BaseModel):
     def setup(self):
         self.param.initialProperty = 600000
         self.param.deposit = 150000
