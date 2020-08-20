@@ -228,7 +228,7 @@ class DashModelAdaptor(dict):
             [
                 html.A(
                     dbc.Row(
-                        [dbc.Col(dbc.NavbarBrand(self.title, className="ml-2")),],
+                        [dbc.Col(dbc.NavbarBrand(self.title, id="model-title", className="ml-2")),],
                         align="center",
                         no_gutters=True,
                     ),
@@ -472,7 +472,7 @@ class DashModelAdaptor(dict):
             static_folder = Path().cwd() / "static"
             return send_from_directory(static_folder, path)
 
-        @app.callback(Output("content", "children"), [Input("url", "pathname")])
+        @app.callback([Output("content", "children"), Output("model-title", "children")], [Input("url", "pathname")])
         def display_page(pathname):
             if isinstance(pathname, str):
                 tokens = pathname.split("/")
@@ -481,7 +481,7 @@ class DashModelAdaptor(dict):
                     for model in self.models:
                         if token == model.prefix:
                             self.model = model
-            return self.make_content_children()
+            return self.make_content_children(), [f"Modeldrop :: {self.model.name}"]
 
         # add callback for toggling the collapse on small screens
         @app.callback(
