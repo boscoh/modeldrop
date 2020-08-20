@@ -10,54 +10,21 @@ class KeenModel(BaseModel):
         self.param.capitalAccelerator = 3
         self.param.depreciationRate = 0.06
         self.param.productivityRate = 0.02
-        self.param.initialWage = 0.850
-        self.param.initialLaborFraction = 0.61
+
         self.param.interestRate = 0.04
         self.param.investSlope = 10
         self.param.investXOrigin = 0.03
         self.param.wageSlope = 4
         self.param.wageXOrigin = 0.6
 
-        self.param.investSlope = 10
-        self.editable_params = [
-            {"key": "time", "max": 500,},
-            {"key": "birthRate", "max": 0.1,},
-            {"key": "capitalAccelerator", "max": 5,},
-            {"key": "depreciationRate", "max": 0.1,},
-            {"key": "productivityRate", "max": 0.1,},
-            {"key": "initialLaborFraction", "max": 1.0,},
-            {"key": "interestRate", "max": 0.2,},
-            {"key": "investSlope", "max": 30, "min": -30},
-            {"key": "investXOrigin", "max": 0.5, "min": -0.5},
-            {"key": "wageSlope", "max": 30, "min": -30},
-            {"key": "wageXOrigin", "max": 1, "min": -1},
-        ]
-        self.model_plots = [
-            {
-                "key": "Share of Output",
-                "vars": ["bankShare", "wageShare", "profitShare"],
-            },
-            {"key": "People", "vars": ["population", "labor"]},
-            {"key": "Output", "vars": ["output", "wages", "debt", "profit", "bank"]},
-        ]
-        self.fn_plots = [
-            {"fn": "wageFn", "xlims": [0, 1], "var": "laborFraction"},
-            {"fn": "investFn", "xlims": [-0.5, 0.5], "var": "profitRate"},
-        ]
+        self.param.initialWage = 0.850
+        self.param.initialLaborFraction = 0.61
+
+        self.setup_ui()
 
     def init_vars(self):
-        self.fns.wageFn = make_cutoff_fn(
-            make_sq_fn(0.000_064_1, 1, 1, 0.040_064_1), 0.9999
-        )
-        self.fns.wageFn = make_exp_fn(0.95, 0.0, 0.5, -0.01)
-        self.fns.wageFn = make_lin_fn(4, 0.6)
         self.fns.wageFn = make_lin_fn(self.param.wageSlope, self.param.wageXOrigin)
 
-        self.fns.investFn = make_cutoff_fn(
-            make_sq_fn(0.0175, 0.53, 6, 0.065), 0.0829999999
-        )
-        self.fns.investFn = make_exp_fn(0.05, 0.05, 1.75, 0)
-        self.fns.investFn = make_lin_fn(10, 0.03)
         self.fns.investFn = make_lin_fn(
             self.param.investSlope, self.param.investXOrigin
         )
@@ -127,6 +94,32 @@ class KeenModel(BaseModel):
             - self.var.debtRatio * self.aux_var.realGrowthRate
         )
 
+    def setup_ui(self):
+        self.editable_params = [
+            {"key": "time", "max": 500,},
+            {"key": "birthRate", "max": 0.1,},
+            {"key": "capitalAccelerator", "max": 5,},
+            {"key": "depreciationRate", "max": 0.1,},
+            {"key": "productivityRate", "max": 0.1,},
+            {"key": "initialLaborFraction", "max": 1.0,},
+            {"key": "interestRate", "max": 0.2,},
+            {"key": "wageSlope", "max": 30, "min": -30},
+            {"key": "wageXOrigin", "max": 1, "min": -1},
+            {"key": "investSlope", "max": 30, "min": -30},
+            {"key": "investXOrigin", "max": 0.5, "min": -0.5},
+        ]
+        self.model_plots = [
+            {
+                "key": "Share",
+                "vars": ["bankShare", "wageShare", "profitShare"],
+            },
+            {"key": "People", "vars": ["population", "labor"]},
+            {"key": "Output", "vars": ["output", "wages", "debt", "profit", "bank"]},
+        ]
+        self.fn_plots = [
+            {"fn": "wageFn", "xlims": [0, 1], "var": "laborFraction"},
+            {"fn": "investFn", "xlims": [-0.5, 0.5], "var": "profitRate"},
+        ]
 
 if __name__ == "__main__":
     KeenModel().make_graph_pngs(is_open=True)
