@@ -5,7 +5,6 @@ class KeenModel(BaseModel):
     def setup(self):
         self.param.time = 150
         self.param.dt = 0.1
-        self.param.timeStep = -1
 
         self.param.birthRate = 0.01
         self.param.capitalAccelerator = 3
@@ -14,16 +13,24 @@ class KeenModel(BaseModel):
         self.param.initialWage = 0.850
         self.param.initialLaborFraction = 0.61
         self.param.interestRate = 0.04
+        self.param.investSlope = 10
+        self.param.investXOrigin = 0.03
+        self.param.wageSlope = 4
+        self.param.wageXOrigin = 0.6
 
+        self.param.investSlope = 10
         self.editable_params = [
-            {"key": "time", "max": 300,},
-            {"key": "timeStep", "max": 10, "min": 0.001, "is_log10": True},
+            {"key": "time", "max": 500,},
             {"key": "birthRate", "max": 0.1,},
             {"key": "capitalAccelerator", "max": 5,},
             {"key": "depreciationRate", "max": 0.1,},
             {"key": "productivityRate", "max": 0.1,},
             {"key": "initialLaborFraction", "max": 1.0,},
             {"key": "interestRate", "max": 0.2,},
+            {"key": "investSlope", "max": 30, "min": -30},
+            {"key": "investXOrigin", "max": 0.5, "min": -0.5},
+            {"key": "wageSlope", "max": 30, "min": -30},
+            {"key": "wageXOrigin", "max": 1, "min": -1},
         ]
         self.model_plots = [
             {
@@ -34,26 +41,36 @@ class KeenModel(BaseModel):
             {"key": "Output", "vars": ["output", "wages", "debt", "profit", "bank"]},
         ]
         self.fn_plots = [
-            {"fn": "wageFn", "xlims": [0.8, 1.1]},
-            {"fn": "investFn", "xlims": [-0.5, 0.3]},
+            {"fn": "wageFn", "xlims": [0, 1], "var": "laborFraction"},
+            {"fn": "investFn", "xlims": [-0.5, 0.5], "var": "profitRate"},
         ]
 
     def init_vars(self):
-        self.fns.wageFn = make_cutoff_fn(make_sq_fn(0.000_064_1, 1, 1, 0.040_064_1), 0.9999)
+        self.fns.wageFn = make_cutoff_fn(
+            make_sq_fn(0.000_064_1, 1, 1, 0.040_064_1), 0.9999
+        )
         self.fns.wageFn = make_exp_fn(0.95, 0.0, 0.5, -0.01)
         self.fns.wageFn = make_lin_fn(4, 0.6)
+        self.fns.wageFn = make_lin_fn(self.param.wageSlope, self.param.wageXOrigin)
 
-        self.fns.investFn = make_cutoff_fn(make_sq_fn(0.0175, 0.53, 6, 0.065), 0.0829999999)
+        self.fns.investFn = make_cutoff_fn(
+            make_sq_fn(0.0175, 0.53, 6, 0.065), 0.0829999999
+        )
         self.fns.investFn = make_exp_fn(0.05, 0.05, 1.75, 0)
         self.fns.investFn = make_lin_fn(10, 0.03)
-
-        self.param.dt = self.param.timeStep
+        self.fns.investFn = make_lin_fn(
+            self.param.investSlope, self.param.investXOrigin
+        )
 
         self.var.wage = self.param.initialWage
         self.var.productivity = 1
         self.var.population = 100
         self.var.laborFraction = self.param.initialLaborFraction
-        self.var.output = self.param.initialLaborFraction * self.var.population * self.var.productivity
+        self.var.output = (
+            self.param.initialLaborFraction
+            * self.var.population
+            * self.var.productivity
+        )
         self.var.wageShare = self.var.wage / self.var.productivity
         self.var.debtRatio = 0.0
 
@@ -87,23 +104,23 @@ class KeenModel(BaseModel):
 
     def calc_dvars(self, t):
         self.dvar.wage = self.aux_var.wageDelta * self.var.wage
-    
+
         self.dvar.productivity = self.param.productivityRate * self.var.productivity
-    
+
         self.dvar.population = self.param.birthRate * self.var.population
-    
+
         self.dvar.laborFraction = self.var.laborFraction * (
             self.aux_var.realGrowthRate
             - self.param.productivityRate
             - self.param.birthRate
         )
-    
+
         self.dvar.output = self.var.output * self.aux_var.realGrowthRate
-    
+
         self.dvar.wageShare = self.var.wageShare * (
             self.aux_var.wageDelta - self.param.productivityRate
         )
-    
+
         self.dvar.debtRatio = (
             self.aux_var.investDelta
             - self.aux_var.profitShare

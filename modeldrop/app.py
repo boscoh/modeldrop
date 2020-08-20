@@ -402,16 +402,18 @@ class DashModelAdaptor(dict):
                 min_y = fn_plot["ymin"]
 
             data = [{"x": x_vals, "y": y_vals, "type": "scatter", "name": key,}]
+            figure = {
+                "data": data,
+                "layout": {
+                    "title": f"{self.format_param_name(key)}",
+                    "yaxis": {"range": [min_y, max_y]},
+                },
+            }
 
-            result.append(
-                {
-                    "data": data,
-                    "layout": {
-                        "title": f"{self.format_param_name(key)}",
-                        "yaxis": {"range": [min_y, max_y]},
-                    },
-                }
-            )
+            if 'var' in fn_plot:
+                figure["layout"]["xaxis"] = { 'title': f"{self.format_param_name(fn_plot['var'])}"}
+
+            result.append(figure)
 
         return result
 
