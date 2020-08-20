@@ -34,7 +34,7 @@ import numpy
 from dash import Dash
 from dash.dependencies import Input, Output, State
 from dash.exceptions import PreventUpdate
-from flask import send_from_directory
+from flask import send_from_directory, Flask
 
 from .basemodel import BaseModel
 
@@ -144,6 +144,16 @@ class DashModelAdaptor(dict):
             model.slider_callback = self.make_model_slider_callback(model)
 
         self.choose_model(0)
+
+        self.server = Flask(__name__)
+
+        self.app = Dash(
+            __name__, external_stylesheets=[dbc.themes.BOOTSTRAP], server=self.server
+        )
+
+        self.app.layout = self.make_layout()
+
+        self.register_callbacks(self.app)
 
     def make_model_slider_callback(self, model: BaseModel):
         def slider_callback(*values):
@@ -500,9 +510,6 @@ class DashModelAdaptor(dict):
             app.callback(outputs, inputs)(model.slider_callback)
 
     def run_server(self, port=8050, is_debug=True):
-        self.app = Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
-        self.app.layout = self.make_layout()
-        self.register_callbacks(self.app)
         self.app.run_server(debug=is_debug, port=port)
 
 

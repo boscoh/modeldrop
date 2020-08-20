@@ -27,8 +27,6 @@ def float_range(start, stop, step):
 
 class BaseModel:
     def __init__(self, param=None):
-        self.aux_var_flows = [['susceptible', 'infectious', 'rateForce']]
-        self.param_flows = [['infectious', 'recovered', 'recoverRate']]
         self.param = AttrDict()
         if param is not None:
             for k, v in param.items():
@@ -39,6 +37,9 @@ class BaseModel:
         self.var = AttrDict()
         self.dvar = AttrDict()
         self.aux_var = AttrDict()
+
+        self.aux_var_flows = []
+        self.param_flows = []
 
         self.fns = AttrDict()
 
@@ -104,6 +105,24 @@ class BaseModel:
 
         for i, key in enumerate(self.keys):
             self.solution[key] = self.output[:, i]
+
+    def add_to_dvars_from_flows(self):
+        flows = []
+
+        if len(self.aux_var_flows):
+            for (from_key, to_key, aux_var_key) in self.aux_var_flows:
+                val = self.aux_var[aux_var_key] * self.var[from_key]
+                flows.append([from_key, to_key, val])
+
+        if len(self.param_flows):
+            for (from_key, to_key, param_key) in self.param_flows:
+                val = self.param[param_key] * self.var[from_key]
+                flows.append([from_key, to_key, val])
+
+        if len(self.flows):
+            for (from_key, to_key, val) in flows:
+                self.dvar[from_key] -= val
+                self.dvar[to_key] += val
 
     def chunky_run(self):
         self.check_consistency()
@@ -225,25 +244,6 @@ class BaseModel:
                 else:
                     raise Exception("Can't handle negative param")
                 self.editable_params.append({"key": k, "max": val})
-
-    def calc_dvars_from_flows(self):
-        flows = []
-
-        for (from_key, to_key, aux_var_key) in self.aux_var_flows:
-            val = self.aux_var[aux_var_key] * self.var[from_key]
-            flows.append([from_key, to_key, val])
-
-        for (from_key, to_key, param_key) in self.param_flows:
-            val = self.param[param_key] * self.var[from_key]
-            flows.append([from_key, to_key, val])
-
-        for key in self.var.keys():
-            self.dvar[key] = 0
-
-        for (from_key, to_key, val) in flows:
-            self.dvar[from_key] -= val
-            self.dvar[to_key] += val
-
 
 def make_exp_fn(x_val, y_val, scale, y_min):
     y_diff = y_val - y_min
