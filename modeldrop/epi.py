@@ -6,6 +6,7 @@ from modeldrop.app import DashModelAdaptor, open_url_in_background
 
 class EpidemiologySirModel(BaseModel):
     def setup(self):
+        self.url = 'https://github.com/boscoh/modeldrop/blob/master/modeldrop/epi.py'
         self.param.initialPopulation = 50000
         self.param.initialPrevalence = 3000
         self.param.recoverRate = 0.1
@@ -45,8 +46,8 @@ class EpidemiologySirModel(BaseModel):
 
     def setup_plots(self):
         self.model_plots = [
-            {"key": "compartments", "vars": ["susceptible", "infectious", "recovered"]},
-            {"key": "Effective Rn", "vars": ["rn"]}
+            {"key": "Populations", "vars": ["susceptible", "infectious", "recovered"]},
+            {"key": "Effective Reproduction Number", "vars": ["rn"]}
         ]
         self.editable_params = [
             {"key": "time", "max": 1000,},

@@ -3,6 +3,7 @@ from .basemodel import BaseModel, make_cutoff_fn, make_sq_fn
 
 class GoodwinBusinessCycleModel(BaseModel):
     def setup(self):
+        self.url = 'https://github.com/boscoh/modeldrop/blob/master/modeldrop/goodwin.py'
         self.param.accelerator = 3
         self.param.depreciation = 0.01
         self.param.productivityRate = 0.02

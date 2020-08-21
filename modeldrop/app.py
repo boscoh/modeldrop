@@ -124,6 +124,7 @@ def get_log_mark_dict(min_val, max_val):
 
 class DashModelAdaptor(dict):
     def __init__(self, models):
+        super().__init__()
 
         self.models = models
 
@@ -217,9 +218,11 @@ class DashModelAdaptor(dict):
         ]
         return dbc.DropdownMenu(
             children=menu_items,
-            in_navbar=True,
-            nav=True,
+            className="pt-3 pb-2",
+            in_navbar=False,
+            nav=False,
             label="Models",
+            color="info",
             style={"listStyleType": "none"},
         )
 
@@ -228,13 +231,18 @@ class DashModelAdaptor(dict):
             [
                 html.A(
                     dbc.Row(
-                        [dbc.Col(dbc.NavbarBrand(self.title, id="model-title", className="ml-2")),],
+                        [
+                            dbc.Col(
+                                dbc.NavbarBrand(
+                                    self.title, id="model-title", className="ml-2"
+                                )
+                            ),
+                        ],
                         align="center",
                         no_gutters=True,
                     ),
                     href="#",
                 ),
-                self.make_models_dropdown_menu(),
             ],
             dark=False,
             color="white",
@@ -243,7 +251,7 @@ class DashModelAdaptor(dict):
 
     def make_parameter_div(self):
         children = [
-            html.H6("Model Parameters", style={"marginBottom": "1em"}),
+            html.H6("Parameters", style={"marginBottom": "1em"}),
         ]
         model = self.model
         for p in self.model.editable_params:
@@ -293,8 +301,12 @@ class DashModelAdaptor(dict):
             },
         )
 
-    def make_graphs_div(self):
-        children = [html.Br(), html.H6("Graphs")]
+    def make_graphs_children(self):
+        children = [
+            self.make_models_dropdown_menu(),
+            html.Div(html.H3("Model"), id="page-title"),
+            html.Br()
+        ]
         model = self.model
         logger.info(f"make_graphs_div {model.name}")
 
@@ -310,7 +322,7 @@ class DashModelAdaptor(dict):
                     "transition": {"duration": 500},
                 },
             )
-            children.append(html.Div(model_plot['key']))
+            children.append(html.H4(model_plot["key"]))
             children.append(graph)
 
         for fn_plot in self.model.fn_plots:
@@ -325,9 +337,9 @@ class DashModelAdaptor(dict):
                     "transition": {"duration": 500},
                 },
             )
-            children.append(html.Div(self.format_param_name(fn_plot['fn'])))
+            children.append(html.H4(self.format_param_name(fn_plot["fn"])))
             children.append(graph)
-        return html.Div(children=children)
+        return children
 
     def get_figures(self, model):
         result = []
@@ -376,9 +388,8 @@ class DashModelAdaptor(dict):
             figure = {
                 "data": data,
                 "layout": {
-                    "margin": {"t":40},
-                    # "title": f"{model_plot['key']}",
-                    "xaxis": {"range": [min_x, max_x]},
+                    "margin": {"t": 40},
+                    "xaxis": {"range": [min_x, max_x], "title": "Time"},
                     "yaxis": {"range": [min_y, max_y]},
                 },
             }
@@ -409,13 +420,14 @@ class DashModelAdaptor(dict):
                 "data": data,
                 "layout": {
                     "margin": {"t": 40},
-                    # "title": f"{self.format_param_name(key)}",
                     "yaxis": {"range": [min_y, max_y]},
                 },
             }
 
-            if 'var' in fn_plot:
-                figure["layout"]["xaxis"] = { 'title': f"{self.format_param_name(fn_plot['var'])}"}
+            if "var" in fn_plot:
+                figure["layout"]["xaxis"] = {
+                    "title": f"{self.format_param_name(fn_plot['var'])}"
+                }
 
             result.append(figure)
 
@@ -441,7 +453,7 @@ class DashModelAdaptor(dict):
                 ),
                 dbc.Col(
                     html.Div(
-                        self.make_graphs_div(),
+                        self.make_graphs_children(),
                         id="graphs",
                         style={
                             "overflow": "scroll",
@@ -476,7 +488,14 @@ class DashModelAdaptor(dict):
             static_folder = Path().cwd() / "static"
             return send_from_directory(static_folder, path)
 
-        @app.callback([Output("content", "children"), Output("model-title", "children")], [Input("url", "pathname")])
+        @app.callback(
+            [
+                Output("content", "children"),
+                Output("model-title", "children"),
+                Output("page-title", "children"),
+            ],
+            [Input("url", "pathname")],
+        )
         def display_page(pathname):
             if isinstance(pathname, str):
                 tokens = pathname.split("/")
@@ -485,7 +504,11 @@ class DashModelAdaptor(dict):
                     for model in self.models:
                         if token == model.prefix:
                             self.model = model
-            return self.make_content_children(), [f"Modeldrop :: {self.model.name}"]
+            return (
+                self.make_content_children(),
+                [f"Modeldrop :: {self.model.name}"],
+                [html.H3(self.model.name), html.Div(html.A("Source", href=self.model.url))],
+            )
 
         # add callback for toggling the collapse on small screens
         @app.callback(
