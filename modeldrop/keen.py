@@ -3,6 +3,7 @@ from .basemodel import BaseModel, make_cutoff_fn, make_lin_fn, make_exp_fn, make
 
 class KeenDynamicEconomyModel(BaseModel):
     def setup(self):
+        self.url = 'https://github.com/boscoh/modeldrop/blob/master/modeldrop/keen.py'
         self.param.time = 150
         self.param.dt = 0.1
 

@@ -6,6 +6,7 @@ from modeldrop.app import DashModelAdaptor, open_url_in_background
 
 class LoktaVolterraEcologyModel(BaseModel):
     def setup(self):
+        self.url = 'https://github.com/boscoh/modeldrop/blob/master/modeldrop/ecology.py'
         self.param.time = 200
         self.param.dt = 0.2
         self.param.initialPrey = 10

@@ -13,6 +13,8 @@ logger = logging.getLogger(__name__)
 
 class PropertyVsFundInvestmentModel(BaseModel):
     def setup(self):
+        self.url = 'https://github.com/boscoh/modeldrop/blob/master/modeldrop/property.py'
+
         self.param.initialProperty = 600000
         self.param.deposit = 150000
         self.param.interestRate = 0.05
