@@ -3,7 +3,9 @@ from .basemodel import BaseModel
 
 class TurchinDemographicStateModel(BaseModel):
     def setup(self):
-        self.url = 'https://github.com/boscoh/modeldrop/blob/master/modeldrop/turchin.py'
+        self.url = (
+            "https://github.com/boscoh/modeldrop/blob/master/modeldrop/turchin.py"
+        )
 
         self.param.time = 500
         self.param.maxSurplus = 1
@@ -16,10 +18,8 @@ class TurchinDemographicStateModel(BaseModel):
         def carryingCapacityFn(state):
             if state < 0:
                 return 1
-            return (
-                1
-                + self.param.carryCapacityDiff
-                * (state / (self.param.stateAtHalfCapacity + state))
+            return 1 + self.param.carryCapacityDiff * (
+                state / (self.param.stateAtHalfCapacity + state)
             )
 
         self.fns.carryingCapacityFn = carryingCapacityFn
@@ -30,7 +30,9 @@ class TurchinDemographicStateModel(BaseModel):
         self.setup_ui()
 
     def calc_aux_vars(self):
-        self.aux_var.carryingCapacity = self.fns.carryingCapacityFn(self.var.stateRevenue)
+        self.aux_var.carryingCapacity = self.fns.carryingCapacityFn(
+            self.var.stateRevenue
+        )
         self.aux_var.surplus = self.param.maxSurplus * (
             1 - self.var.populationDensity / self.aux_var.carryingCapacity
         )
@@ -45,7 +47,7 @@ class TurchinDemographicStateModel(BaseModel):
         )
 
     def setup_ui(self):
-        self.model_plots = [
+        self.var_plots = [
             {
                 "key": "People",
                 "vars": ["populationDensity", "carryingCapacity"],
@@ -56,7 +58,12 @@ class TurchinDemographicStateModel(BaseModel):
         ]
 
         self.fn_plots = [
-            {"fn": "carryingCapacityFn", "xlims": [0, 100], "ymin": 0, "var": "stateRevenue"},
+            {
+                "fn": "carryingCapacityFn",
+                "xlims": [0, 100],
+                "ymin": 0,
+                "var": "stateRevenue",
+            },
         ]
 
         self.editable_params = [

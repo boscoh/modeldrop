@@ -1,15 +1,15 @@
-import sys
 import logging
+import sys
 
 logging.basicConfig(level=logging.DEBUG)
 
 from modeldrop.app import DashModelAdaptor, open_url_in_background
+from modeldrop.ecology import LoktaVolterraEcologyModel
+from modeldrop.epi import EpidemiologySirModel
 from modeldrop.goodwin import GoodwinBusinessCycleModel
 from modeldrop.keen import KeenDynamicEconomyModel
 from modeldrop.property import PropertyVsFundInvestmentModel
 from modeldrop.turchin import TurchinDemographicStateModel
-from modeldrop.epi import EpidemiologySirModel
-from modeldrop.ecology import LoktaVolterraEcologyModel
 
 port = "8050"
 if "-o" in sys.argv:
@@ -17,7 +17,14 @@ if "-o" in sys.argv:
 is_debug = "-d" in sys.argv
 
 adaptor = DashModelAdaptor(
-    [KeenDynamicEconomyModel(), LoktaVolterraEcologyModel(), EpidemiologySirModel(), TurchinDemographicStateModel(), PropertyVsFundInvestmentModel(), GoodwinBusinessCycleModel(), ]
+    [
+        KeenDynamicEconomyModel(),
+        LoktaVolterraEcologyModel(),
+        EpidemiologySirModel(),
+        TurchinDemographicStateModel(),
+        PropertyVsFundInvestmentModel(),
+        GoodwinBusinessCycleModel(),
+    ]
 )
 server = adaptor.server
 

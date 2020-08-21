@@ -1,4 +1,3 @@
-import logging
 import math
 
 from .basemodel import BaseModel
@@ -8,12 +7,11 @@ def get_min_payment(principal, rate, n_payment):
     return (rate * principal) / (1.0 - math.pow(1.0 + rate, -n_payment))
 
 
-logger = logging.getLogger(__name__)
-
-
 class PropertyVsFundInvestmentModel(BaseModel):
     def setup(self):
-        self.url = 'https://github.com/boscoh/modeldrop/blob/master/modeldrop/property.py'
+        self.url = (
+            "https://github.com/boscoh/modeldrop/blob/master/modeldrop/property.py"
+        )
 
         self.param.initialProperty = 600000
         self.param.deposit = 150000
@@ -25,38 +23,7 @@ class PropertyVsFundInvestmentModel(BaseModel):
         self.param.inflation = 0.02
         self.param.time = 50
 
-        self.editable_params = [
-            {"key": "time", "max": 100,},
-            {"key": "mortgageLength", "max": 100,},
-            {"key": "interestRate", "max": 0.5,},
-            {"key": "initialProperty", "max": 1000000},
-            {"key": "deposit", "max": 1000000},
-            {"key": "propertyRate", "max": 0.5,},
-            {"key": "fundRate", "max": 0.5,},
-        ]
-
-        self.model_plots = [
-            {
-                "key": "Month",
-                "vars": [
-                    "paymentMonth",
-                    "interestMonth",
-                    "rentMonth",
-                    "fundChangeMonth",
-                ],
-            },
-            {
-                "key": "Property",
-                "vars": [
-                    "paid",
-                    "property",
-                    "totalInterest",
-                    "propertyProfit",
-                    "principal",
-                ],
-            },
-            {"key": "Fund", "vars": ["paid", "fund", "totalRent", "fundProfit"],},
-        ]
+        self.setup_ui()
 
     def init_vars(self):
         self.init_var.property = self.param.initialProperty
@@ -106,3 +73,37 @@ class PropertyVsFundInvestmentModel(BaseModel):
         self.dvar.paid = self.aux_var.paymentRate
         self.dvar.rent = self.param.inflation * self.var.rent
         self.dvar.totalRent = self.var.rent
+
+    def setup_ui(self):
+        self.editable_params = [
+            {"key": "time", "max": 100,},
+            {"key": "mortgageLength", "max": 100,},
+            {"key": "interestRate", "max": 0.5,},
+            {"key": "initialProperty", "max": 1000000},
+            {"key": "deposit", "max": 1000000},
+            {"key": "propertyRate", "max": 0.5,},
+            {"key": "fundRate", "max": 0.5,},
+        ]
+
+        self.var_plots = [
+            {
+                "key": "Month",
+                "vars": [
+                    "paymentMonth",
+                    "interestMonth",
+                    "rentMonth",
+                    "fundChangeMonth",
+                ],
+            },
+            {
+                "key": "Property",
+                "vars": [
+                    "paid",
+                    "property",
+                    "totalInterest",
+                    "propertyProfit",
+                    "principal",
+                ],
+            },
+            {"key": "Fund", "vars": ["paid", "fund", "totalRent", "fundProfit"],},
+        ]

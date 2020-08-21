@@ -1,9 +1,10 @@
-from .basemodel import BaseModel, make_cutoff_fn, make_lin_fn, make_exp_fn, make_sq_fn
+from .basemodel import BaseModel, make_lin_fn
 
 
 class KeenDynamicEconomyModel(BaseModel):
     def setup(self):
-        self.url = 'https://github.com/boscoh/modeldrop/blob/master/modeldrop/keen.py'
+        self.url = "https://github.com/boscoh/modeldrop/blob/master/modeldrop/keen.py"
+
         self.param.time = 150
         self.param.dt = 0.1
 
@@ -109,11 +110,8 @@ class KeenDynamicEconomyModel(BaseModel):
             {"key": "investSlope", "max": 30, "min": -30},
             {"key": "investXOrigin", "max": 0.5, "min": -0.5},
         ]
-        self.model_plots = [
-            {
-                "key": "Share",
-                "vars": ["bankShare", "wageShare", "profitShare"],
-            },
+        self.var_plots = [
+            {"key": "Share", "vars": ["bankShare", "wageShare", "profitShare"],},
             {"key": "People", "vars": ["population", "labor"]},
             {"key": "Output", "vars": ["output", "wages", "debt", "profit", "bank"]},
         ]
@@ -121,6 +119,3 @@ class KeenDynamicEconomyModel(BaseModel):
             {"fn": "wageFn", "xlims": [0, 1], "var": "laborFraction"},
             {"fn": "investFn", "xlims": [-0.5, 0.5], "var": "profitRate"},
         ]
-
-if __name__ == "__main__":
-    KeenDynamicEconomyModel().make_graph_pngs(is_open=True)

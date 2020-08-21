@@ -3,7 +3,10 @@ from .basemodel import BaseModel, make_cutoff_fn, make_sq_fn
 
 class GoodwinBusinessCycleModel(BaseModel):
     def setup(self):
-        self.url = 'https://github.com/boscoh/modeldrop/blob/master/modeldrop/goodwin.py'
+        self.url = (
+            "https://github.com/boscoh/modeldrop/blob/master/modeldrop/goodwin.py"
+        )
+
         self.param.accelerator = 3
         self.param.depreciation = 0.01
         self.param.productivityRate = 0.02
@@ -50,7 +53,7 @@ class GoodwinBusinessCycleModel(BaseModel):
             {"key": "productivityRate", "max": 0.1,},
         ]
 
-        self.model_plots = [
+        self.var_plots = [
             {"key": "Share", "vars": ["wageShare", "profitShare"]},
             {"key": "Output", "vars": ["output", "wages"]},
             {"key": "People", "vars": ["population", "labor"]},

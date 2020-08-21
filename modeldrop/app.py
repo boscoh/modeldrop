@@ -34,7 +34,7 @@ import numpy
 from dash import Dash
 from dash.dependencies import Input, Output, State
 from dash.exceptions import PreventUpdate
-from flask import send_from_directory, Flask
+from flask import Flask, send_from_directory
 
 from .basemodel import BaseModel
 
@@ -136,7 +136,7 @@ class DashModelAdaptor(dict):
             for p in model.editable_params:
                 p["id"] = model.prefix + "-" + p["key"]
 
-            for p in model.model_plots:
+            for p in model.var_plots:
                 p["id"] = model.prefix + "-" + p["key"]
 
             for p in model.fn_plots:
@@ -179,7 +179,7 @@ class DashModelAdaptor(dict):
                 logger.info(f"slider_callback exception: {e}...")
                 figures = [
                     {"data": {"x": [], "y": [], "type": "scatter"}}
-                    for i in range(len(model.model_plots) + len(model.fn_plots))
+                    for i in range(len(model.var_plots) + len(model.fn_plots))
                 ]
 
             self.is_running = False
@@ -305,12 +305,12 @@ class DashModelAdaptor(dict):
         children = [
             self.make_models_dropdown_menu(),
             html.Div(html.H3("Model"), id="page-title"),
-            html.Br()
+            html.Br(),
         ]
         model = self.model
         logger.info(f"make_graphs_div {model.name}")
 
-        for model_plot in model.model_plots:
+        for model_plot in model.var_plots:
             graph = dcc.Graph(
                 id=model_plot["id"],
                 config={"responsive": True},
@@ -344,7 +344,7 @@ class DashModelAdaptor(dict):
     def get_figures(self, model):
         result = []
 
-        for model_plot in model.model_plots:
+        for model_plot in model.var_plots:
             all_x_vals = []
             all_y_vals = []
             data = []
@@ -418,10 +418,7 @@ class DashModelAdaptor(dict):
             data = [{"x": x_vals, "y": y_vals, "type": "scatter", "name": key,}]
             figure = {
                 "data": data,
-                "layout": {
-                    "margin": {"t": 40},
-                    "yaxis": {"range": [min_y, max_y]},
-                },
+                "layout": {"margin": {"t": 40}, "yaxis": {"range": [min_y, max_y]},},
             }
 
             if "var" in fn_plot:
@@ -507,7 +504,10 @@ class DashModelAdaptor(dict):
             return (
                 self.make_content_children(),
                 [f"Modeldrop :: {self.model.name}"],
-                [html.H3(self.model.name), html.Div(html.A("Source", href=self.model.url))],
+                [
+                    html.H3(self.model.name),
+                    html.Div(html.A("Python source", href=self.model.url)),
+                ],
             )
 
         # add callback for toggling the collapse on small screens
@@ -532,7 +532,7 @@ class DashModelAdaptor(dict):
                 return n_intervals
 
         for model in self.models:
-            outputs = [Output(p["id"], "figure") for p in model.model_plots] + [
+            outputs = [Output(p["id"], "figure") for p in model.var_plots] + [
                 Output(p["id"], "figure") for p in model.fn_plots
             ]
             inputs = [Input(p["id"], "value") for p in model.editable_params]
@@ -559,3 +559,12 @@ def open_url_in_background(url, sleep_in_s=1):
 
     # creates a thread to poll server before opening client
     threading.Thread(target=inner).start()
+
+
+def show_models(models, argv):
+    logging.basicConfig(level=logging.DEBUG)
+    port = "8050"
+    if "-o" in argv:
+        open_url_in_background(f"http://127.0.0.1:{port}/")
+    is_debug = "-d" in argv
+    DashModelAdaptor(models).run_server(port=port, is_debug=is_debug)
