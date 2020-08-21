@@ -4,10 +4,11 @@ from .app import show_models
 from .basemodel import BaseModel
 
 
-class EpidemiologySirModel(BaseModel):
+class StandardThreePartEpidemiologyModel(BaseModel):
     def setup(self):
         self.url = "https://github.com/boscoh/modeldrop/blob/master/modeldrop/epi.py"
 
+        self.param.time = 300
         self.param.initialPopulation = 50000
         self.param.initialPrevalence = 3000
         self.param.recoverRate = 0.1
@@ -61,4 +62,4 @@ class EpidemiologySirModel(BaseModel):
 
 
 if __name__ == "__main__":
-    show_models([EpidemiologySirModel()], sys.argv)
+    show_models([StandardThreePartEpidemiologyModel()], sys.argv)

@@ -513,14 +513,14 @@ class DashModelAdaptor(dict):
                     for model in self.models:
                         if token == model.prefix:
                             self.model = model
-            return (
+            result = [
                 self.make_content_children(),
                 [f"Modeldrop :: {self.model.name}"],
-                [
-                    html.H3(self.model.name),
-                    html.Div(html.A("Python source", href=self.model.url)),
-                ],
-            )
+                [html.H3(self.model.name)],
+            ]
+            if hasattr(self.model, 'url'):
+                result[-1].append(html.Div(html.A("Python source", href=self.model.url)))
+            return result
 
         # add callback for toggling the collapse on small screens
         @app.callback(
