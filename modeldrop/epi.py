@@ -7,14 +7,16 @@ from .basemodel import BaseModel
 class EpidemiologySirModel(BaseModel):
     def setup(self):
         self.url = "https://github.com/boscoh/modeldrop/blob/master/modeldrop/epi.py"
+
         self.param.initialPopulation = 50000
         self.param.initialPrevalence = 3000
         self.param.recoverRate = 0.1
         self.param.reproductionNumber = 1.5
         self.param.infectiousPeriod = 10
 
-        self.setup_ui()
         self.setup_flows()
+
+        self.setup_ui()
 
     def init_vars(self):
         self.param.recoverRate = 1 / self.param.infectiousPeriod

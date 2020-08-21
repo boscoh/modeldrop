@@ -32,8 +32,6 @@ class BaseModel:
             for k, v in param.items():
                 self.param[k] = v
 
-        self.init_var = AttrDict()
-
         self.var = AttrDict()
         self.dvar = AttrDict()
         self.aux_var = AttrDict()
@@ -58,12 +56,8 @@ class BaseModel:
     def setup(self):
         pass
 
-    def reset_solutions(self):
-        self.solution.clear()
-
     def init_vars(self):
-        for key, val in self.init_var.items():
-            self.var[key] = val
+        pass
 
     def calc_vars(self):
         pass
@@ -73,6 +67,9 @@ class BaseModel:
 
     def calc_aux_vars(self):
         pass
+
+    def reset_solutions(self):
+        self.solution.clear()
 
     def update(self, t):
         self.calc_dvars(t)
