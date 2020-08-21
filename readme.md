@@ -70,7 +70,7 @@ First is a wrapper around matplotlib to generate images.
 
 The second is a pipe into plotly using dash.
 
-    self.var_plots = [
+    self.plots = [
         {"key": "People", "vars": ["population", "labor"]},
         {"key": "Output", "vars": ["output", "wages"]},
     ]

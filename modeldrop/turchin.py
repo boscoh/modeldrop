@@ -47,17 +47,14 @@ class TurchinDemographicStateModel(BaseModel):
         )
 
     def setup_ui(self):
-        self.var_plots = [
+        self.plots = [
             {
-                "key": "People",
+                "title": "People",
                 "vars": ["populationDensity", "carryingCapacity"],
                 "ymin": 0,
             },
-            {"key": "Surplus", "vars": ["surplus"]},
-            {"key": "State Revenue", "vars": ["stateRevenue"]},
-        ]
-
-        self.fn_plots = [
+            {"title": "Surplus", "vars": ["surplus"]},
+            {"title": "State Revenue", "vars": ["stateRevenue"]},
             {
                 "fn": "carryingCapacityFn",
                 "xlims": [0, 100],

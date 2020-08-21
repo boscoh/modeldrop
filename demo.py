@@ -61,7 +61,7 @@ class DemoModel(BaseModel):
         self.dvar.s = self.param.gam * self.dvar.e - self.param.al * self.var.e
 
     def setup_plots(self):
-        self.var_plots = [
+        self.plots = [
             {"key": "people", "vars": ["p", "e", "s"], "ymin": -100, "ymax": 100},
         ]
         self.fn_plots = [

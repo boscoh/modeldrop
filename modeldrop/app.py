@@ -34,11 +34,23 @@ import numpy
 from dash import Dash
 from dash.dependencies import Input, Output, State
 from dash.exceptions import PreventUpdate
+import dash_dangerously_set_inner_html
+
 from flask import Flask, send_from_directory
+import markdown as md
+import markdown_katex
+import textwrap
 
 from .basemodel import BaseModel
 
+
 logger = logging.getLogger(__name__)
+
+
+def md_to_html(md_text):
+    md_text = textwrap.dedent(md_text)
+    return md.markdown(md_text, extensions=["markdown_katex"])
+
 
 millnames = ["", "k", "m", "b", "t"]
 
@@ -68,9 +80,6 @@ def get_mark_dict(min_val, max_val):
         n_sig = 0
     format = f"%.{n_sig}f"
 
-    # if abs(1 - mark) < 0.5:
-    #     format = "%.1f"
-
     mark_dict = {0: "0"}
     this_mark = 0
     while this_mark < max_val:
@@ -98,9 +107,6 @@ def get_mark_dict(min_val, max_val):
         mark_dict[mark_key] = s
         this_mark -= mark
 
-    logger.info(f"format={format} step={step} mark={mark}")
-    logger.info(f"{mark_dict}")
-
     return step, mark_dict
 
 
@@ -115,11 +121,24 @@ def get_log_mark_dict(min_val, max_val):
             format = "%.0f"
         mark_dict[n] = format % math.pow(10, n)
 
-    logger.info(f"min_val={min_val} max_val={max_val}")
-    logger.info(f"step={step} mark={1}")
-    logger.info(f"{mark_dict}")
-
     return step, mark_dict
+
+
+def make_slug(s):
+    return s.lower().replace(" ", "-")
+
+
+def make_title(key):
+    """https://stackoverflow.com/a/1176023"""
+    s1 = re.sub("(.)([A-Z][a-z]+)", r"\1 \2", key)
+    s2 = re.sub("([a-z0-9])([A-Z])", r"\1 \2", s1)
+    return s2.lower().title()
+
+
+def make_md_div(md):
+    return html.Div(
+        dash_dangerously_set_inner_html.DangerouslySetInnerHTML(md_to_html(md))
+    )
 
 
 class DashModelAdaptor(dict):
@@ -130,17 +149,18 @@ class DashModelAdaptor(dict):
 
         self.is_running = False
         for model in self.models:
-            model.name = self.format_param_name(model.__class__.__name__)
-            model.prefix = model.name.lower().replace(" ", "_")
+            model.name = make_title(model.__class__.__name__)
+
+            model.prefix = make_slug(model.name)
 
             for p in model.editable_params:
                 p["id"] = model.prefix + "-" + p["key"]
 
-            for p in model.var_plots:
-                p["id"] = model.prefix + "-" + p["key"]
-
-            for p in model.fn_plots:
-                p["id"] = model.prefix + "-" + p["fn"]
+            for p in model.plots:
+                if "vars" in p:
+                    p["id"] = model.prefix + "-" + make_slug(p["title"])
+                elif "fn" in p:
+                    p["id"] = model.prefix + "-" + make_slug(make_title(p["fn"]))
 
             model.slider_callback = self.make_model_slider_callback(model)
 
@@ -179,7 +199,7 @@ class DashModelAdaptor(dict):
                 logger.info(f"slider_callback exception: {e}...")
                 figures = [
                     {"data": {"x": [], "y": [], "type": "scatter"}}
-                    for i in range(len(model.var_plots) + len(model.fn_plots))
+                    for i in range(len(model.plots))
                 ]
 
             self.is_running = False
@@ -195,13 +215,6 @@ class DashModelAdaptor(dict):
         self.title = f"Modeldrop :: {model.name}"
 
         self.is_running = False
-
-    @staticmethod
-    def format_param_name(key):
-        """https://stackoverflow.com/a/1176023"""
-        s1 = re.sub("(.)([A-Z][a-z]+)", r"\1 \2", key)
-        s2 = re.sub("([a-z0-9])([A-Z])", r"\1 \2", s1)
-        return s2.lower().title()
 
     def get_input_param(self, key):
         for p in self.model.editable_params:
@@ -264,8 +277,6 @@ class DashModelAdaptor(dict):
             max_val = my_param.get("max", value * 5)
             min_val = my_param.get("min", 0)
 
-            logger.info(f"key={input_key}")
-
             if my_param.get("is_log10"):
                 min_val = math.log10(min_val)
                 max_val = math.log10(max_val)
@@ -273,7 +284,10 @@ class DashModelAdaptor(dict):
             else:
                 step, mark_dict = get_mark_dict(min_val, max_val)
 
-            children.append(dbc.Label(f"{self.format_param_name(input_key)}"),)
+            logger.info(f"make_parameter_div key={input_key} {mark_dict}")
+
+            children.append(dbc.Label(f"{make_title(input_key)}"),)
+
             children.append(
                 html.Div(
                     dcc.Slider(
@@ -310,9 +324,9 @@ class DashModelAdaptor(dict):
         model = self.model
         logger.info(f"make_graphs_div {model.name}")
 
-        for model_plot in model.var_plots:
+        for plot in model.plots:
             graph = dcc.Graph(
-                id=model_plot["id"],
+                id=plot["id"],
                 config={"responsive": True},
                 style={"height": "405px"},
                 animate=True,
@@ -322,111 +336,105 @@ class DashModelAdaptor(dict):
                     "transition": {"duration": 500},
                 },
             )
-            children.append(html.H4(model_plot["key"]))
-            children.append(graph)
-
-        for fn_plot in self.model.fn_plots:
-            graph = dcc.Graph(
-                id=fn_plot["id"],
-                config={"responsive": True},
-                style={"height": "405px"},
-                animate=True,
-                animation_options={
-                    "frame": {"redraw": False, "duration": 1000},
-                    "easing": "cubic-in-out",
-                    "transition": {"duration": 500},
-                },
-            )
-            children.append(html.H4(self.format_param_name(fn_plot["fn"])))
+            if "markdown" in plot:
+                children.append(make_md_div(plot["markdown"]))
+            if "vars" in plot:
+                children.append(html.H4(plot["title"]))
+            elif "fn" in plot:
+                children.append(html.H4(make_title(plot["fn"])))
             children.append(graph)
         return children
 
     def get_figures(self, model):
         result = []
 
-        for model_plot in model.var_plots:
-            all_x_vals = []
-            all_y_vals = []
-            data = []
-            for key in model_plot["vars"]:
+        for plot in model.plots:
+            if "vars" in plot:
+
+                all_x_vals = []
+                all_y_vals = []
+                data = []
+                for key in plot["vars"]:
+                    x_vals = []
+                    y_vals = []
+                    if key in model.solution:
+                        for x, y in zip(model.times, model.solution[key]):
+                            if numpy.isnan(x):
+                                logger.info(f"make_stages_graphs_div error x={x}")
+                                continue
+                            if numpy.isnan(y):
+                                logger.info(f"make_stages_graphs_div error y={y}")
+                                continue
+                            x_vals.append(float(x))
+                            y_vals.append(float(y))
+                    all_x_vals.extend(x_vals)
+                    all_y_vals.extend(y_vals)
+                    data.append(
+                        {
+                            "x": x_vals,
+                            "y": y_vals,
+                            "type": "scatter",
+                            "name": make_title(key),
+                        }
+                    )
+
+                min_x = min(all_x_vals)
+                max_x = max(all_x_vals)
+                min_y = min(all_y_vals)
+                max_y = max(all_y_vals)
+
+                if plot.get("ymin") is not None:
+                    if min_y < plot["ymin"]:
+                        min_y = plot["ymin"]
+
+                if plot.get("ymax") is not None:
+                    if max_y > plot["ymax"]:
+                        max_y = plot["ymax"]
+
+                figure = {
+                    "data": data,
+                    "layout": {
+                        "margin": {"t": 40},
+                        "xaxis": {"range": [min_x, max_x], "title": "Time"},
+                        "yaxis": {"range": [min_y, max_y]},
+                    },
+                }
+                result.append(figure)
+
+            elif "fn" in plot:
+
+                xlims = plot["xlims"]
+                xdiff = xlims[1] - xlims[0]
+                exp = math.floor(math.log10(xdiff))
+                step = math.pow(10, exp - 2)
+                this_x = xlims[0]
                 x_vals = []
-                y_vals = []
-                if key in model.solution:
-                    for x, y in zip(model.times, model.solution[key]):
-                        if numpy.isnan(x):
-                            logger.info(f"make_stages_graphs_div error x={x}")
-                            continue
-                        if numpy.isnan(y):
-                            logger.info(f"make_stages_graphs_div error y={y}")
-                            continue
-                        x_vals.append(float(x))
-                        y_vals.append(float(y))
-                all_x_vals.extend(x_vals)
-                all_y_vals.extend(y_vals)
-                data.append(
-                    {
-                        "x": x_vals,
-                        "y": y_vals,
-                        "type": "scatter",
-                        "name": self.format_param_name(key),
-                    }
-                )
+                while this_x <= xlims[1]:
+                    x_vals.append(this_x)
+                    this_x += step
 
-            min_x = min(all_x_vals)
-            max_x = max(all_x_vals)
-            min_y = min(all_y_vals)
-            max_y = max(all_y_vals)
+                key = plot["fn"]
+                fn = model.fns[key]
+                y_vals = list(map(fn, x_vals))
 
-            if model_plot.get("ymin") is not None:
-                if min_y < model_plot["ymin"]:
-                    min_y = model_plot["ymin"]
+                min_y = min(y_vals)
+                max_y = max(y_vals)
+                if plot.get("ymin") is not None:
+                    min_y = plot["ymin"]
 
-            if model_plot.get("ymax") is not None:
-                if max_y > model_plot["ymax"]:
-                    max_y = model_plot["ymax"]
-
-            figure = {
-                "data": data,
-                "layout": {
-                    "margin": {"t": 40},
-                    "xaxis": {"range": [min_x, max_x], "title": "Time"},
-                    "yaxis": {"range": [min_y, max_y]},
-                },
-            }
-            result.append(figure)
-
-        for fn_plot in self.model.fn_plots:
-            xlims = fn_plot["xlims"]
-            xdiff = xlims[1] - xlims[0]
-            exp = math.floor(math.log10(xdiff))
-            step = math.pow(10, exp - 2)
-            this_x = xlims[0]
-            x_vals = []
-            while this_x <= xlims[1]:
-                x_vals.append(this_x)
-                this_x += step
-
-            key = fn_plot["fn"]
-            fn = model.fns[key]
-            y_vals = list(map(fn, x_vals))
-
-            min_y = min(y_vals)
-            max_y = max(y_vals)
-            if fn_plot.get("ymin") is not None:
-                min_y = fn_plot["ymin"]
-
-            data = [{"x": x_vals, "y": y_vals, "type": "scatter", "name": key,}]
-            figure = {
-                "data": data,
-                "layout": {"margin": {"t": 40}, "yaxis": {"range": [min_y, max_y]},},
-            }
-
-            if "var" in fn_plot:
-                figure["layout"]["xaxis"] = {
-                    "title": f"{self.format_param_name(fn_plot['var'])}"
+                data = [{"x": x_vals, "y": y_vals, "type": "scatter", "name": key,}]
+                figure = {
+                    "data": data,
+                    "layout": {
+                        "margin": {"t": 40},
+                        "yaxis": {"range": [min_y, max_y]},
+                    },
                 }
 
-            result.append(figure)
+                if "var" in plot:
+                    figure["layout"]["xaxis"] = {"title": f"{make_title(plot['var'])}"}
+
+                result.append(figure)
 
         return result
 
@@ -458,6 +466,10 @@ class DashModelAdaptor(dict):
                             "height": "calc(100vh - 56px)",
                         },
                     ),
+                    xs=12,
+                    lg=9,
+                    md=8,
+                    sm=7,
                 ),
             ]
         )
@@ -532,9 +544,7 @@ class DashModelAdaptor(dict):
                 return n_intervals
 
         for model in self.models:
-            outputs = [Output(p["id"], "figure") for p in model.var_plots] + [
-                Output(p["id"], "figure") for p in model.fn_plots
-            ]
+            outputs = [Output(p["id"], "figure") for p in model.plots]
             inputs = [Input(p["id"], "value") for p in model.editable_params]
             app.callback(outputs, inputs)(model.slider_callback)
 
