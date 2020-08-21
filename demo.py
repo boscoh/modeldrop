@@ -1,7 +1,7 @@
 import sys
 
-from modeldrop.basemodel import BaseModel
 from modeldrop.app import DashModelAdaptor, open_url_in_background
+from modeldrop.basemodel import BaseModel
 
 
 class DemoModel(BaseModel):
@@ -40,16 +40,17 @@ class DemoModel(BaseModel):
         def fn(state):
             if state < 0:
                 return 1
-            return (
-                1
-                + self.param.carryCapacityDiff
-                * (state / (self.param.stateAtHalfCapacity + state))
+            return 1 + self.param.carryCapacityDiff * (
+                state / (self.param.stateAtHalfCapacity + state)
             )
+
         self.fns["carryCapacityFromStateRevenue"] = fn
 
     def calc_aux_vars(self):
         self.aux_var.g = self.fns.carryCapacityFromStateRevenue(self.var.s)
-        self.aux_var.x = self.var.p * (1 - (1 / self.aux_var.g) * self.var.p) / (1 + self.var.e)
+        self.aux_var.x = (
+            self.var.p * (1 - (1 / self.aux_var.g) * self.var.p) / (1 + self.var.e)
+        )
 
     def calc_dvars(self, t):
         self.dvar.p = self.param.b1 * self.aux_var.x - self.param.d1 * self.var.p
@@ -60,7 +61,7 @@ class DemoModel(BaseModel):
         self.dvar.s = self.param.gam * self.dvar.e - self.param.al * self.var.e
 
     def setup_plots(self):
-        self.model_plots = [
+        self.var_plots = [
             {"key": "people", "vars": ["p", "e", "s"], "ymin": -100, "ymax": 100},
         ]
         self.fn_plots = [
@@ -92,4 +93,3 @@ if __name__ == "__main__":
     # os.system("open plot-*.png")
 
     show_models([model], sys.argv)
-

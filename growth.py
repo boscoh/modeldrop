@@ -6,7 +6,7 @@ class PopModel(BaseModel):
         self.param.population_exponent = 0.035
         self.param.time = 200
         self.init_var.population = 10
-        self.model_plots = [
+        self.var_plots = [
             {"key": "people", "vars": ["population"]},
         ]
         self.editable_params = [
@@ -19,6 +19,7 @@ class PopModel(BaseModel):
 
 if __name__ == "__main__":
     import os
+
     from modeldrop import graphing
 
     for graph in PopModel().make_graphs():

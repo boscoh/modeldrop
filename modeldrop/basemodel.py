@@ -50,7 +50,7 @@ class BaseModel:
         self.solution = AttrDict()
 
         self.editable_params = []
-        self.model_plots = []
+        self.var_plots = []
         self.fn_plots = []
 
         self.setup()
@@ -101,7 +101,9 @@ class BaseModel:
 
         y_init = [self.var[key] for key in self.keys]
 
-        self.output, info_dict = odeint(calc_dvar_array, y_init, self.times, full_output=True)
+        self.output, info_dict = odeint(
+            calc_dvar_array, y_init, self.times, full_output=True
+        )
 
         for i, key in enumerate(self.keys):
             self.solution[key] = self.output[:, i]
@@ -183,7 +185,7 @@ class BaseModel:
         self.run()
         self.calc_aux_var_solutions()
         result = []
-        for plot in self.model_plots:
+        for plot in self.var_plots:
             graph = self.make_output_graph(
                 "plot-" + plot["key"], plot["key"], plot["vars"]
             )
@@ -200,16 +202,18 @@ class BaseModel:
 
         for v in self.var:
             if v not in self.dvar:
-                raise Exception(f'var {v} has no matching dvar in self.calc_dvar')
+                raise Exception(f"var {v} has no matching dvar in self.calc_dvar")
 
         for v in self.dvar:
             if v not in self.var:
-                raise Exception(f'dvar {v} has no matching var for self.init_var')
+                raise Exception(f"dvar {v} has no matching var for self.init_var")
 
-        for p in self.model_plots:
+        for p in self.var_plots:
             for v in p["vars"]:
                 if v not in self.var and v not in self.aux_var:
-                    raise Exception(f'plot {p["key"]} has var {v} not in self.vars nor in self.aux_vars')
+                    raise Exception(
+                        f'plot {p["key"]} has var {v} not in self.vars nor in self.aux_vars'
+                    )
 
         for p in self.editable_params:
             if p["key"] not in self.param:
@@ -217,19 +221,19 @@ class BaseModel:
 
         for (f, t, v) in self.aux_var_flows:
             if f not in self.var:
-                raise Exception(f'flow from_key {f} not in self.var')
+                raise Exception(f"flow from_key {f} not in self.var")
             if t not in self.var:
-                raise Exception(f'flow to_key {t} not in self.var')
+                raise Exception(f"flow to_key {t} not in self.var")
             if v not in self.aux_var:
-                raise Exception(f'flow aux_var {v} not in self.aux_var')
+                raise Exception(f"flow aux_var {v} not in self.aux_var")
 
         for (f, t, p) in self.param_flows:
             if f not in self.var:
-                raise Exception(f'flow from_key {f} not in self.var')
+                raise Exception(f"flow from_key {f} not in self.var")
             if t not in self.var:
-                raise Exception(f'flow to_key {t} not in self.var')
+                raise Exception(f"flow to_key {t} not in self.var")
             if p not in self.param:
-                raise Exception(f'flow param {p} not in self.param')
+                raise Exception(f"flow param {p} not in self.param")
 
     def extract_editable_params(self):
         for k in self.param:
@@ -244,6 +248,7 @@ class BaseModel:
                 else:
                     raise Exception("Can't handle negative param")
                 self.editable_params.append({"key": k, "max": val})
+
 
 def make_exp_fn(x_val, y_val, scale, y_min):
     y_diff = y_val - y_min
@@ -262,6 +267,7 @@ def make_sq_fn(A, B, C, D):
 def make_lin_fn(slope, x_zero):
     def fn(x):
         return slope * (x - x_zero)
+
     return fn
 
 
