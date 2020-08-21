@@ -13,3 +13,6 @@ pytz==2019.3
 scikit_learn==0.21.3
 typing==3.7.4.1
 PyYAML==5.1.2
+markdown
+markdown_katex
+dash-dangerously-set-inner-html

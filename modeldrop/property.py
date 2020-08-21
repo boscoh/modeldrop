@@ -84,9 +84,9 @@ class PropertyVsFundInvestmentModel(BaseModel):
             {"key": "fundRate", "max": 0.5,},
         ]
 
-        self.var_plots = [
+        self.plots = [
             {
-                "key": "Month",
+                "title": "Month",
                 "vars": [
                     "paymentMonth",
                     "interestMonth",
@@ -95,7 +95,7 @@ class PropertyVsFundInvestmentModel(BaseModel):
                 ],
             },
             {
-                "key": "Property",
+                "title": "Property",
                 "vars": [
                     "paid",
                     "property",
@@ -104,5 +104,5 @@ class PropertyVsFundInvestmentModel(BaseModel):
                     "principal",
                 ],
             },
-            {"key": "Fund", "vars": ["paid", "fund", "totalRent", "fundProfit"],},
+            {"title": "Fund", "vars": ["paid", "fund", "totalRent", "fundProfit"],},
         ]

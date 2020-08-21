@@ -14,8 +14,8 @@ class PopModel(BaseModel):
         self.dvar.population = self.param.population_exponent * self.var.population
 
     def setup_ui(self):
-        self.var_plots = [
-            {"key": "people", "vars": ["population"]},
+        self.plots = [
+            {"title": "people", "vars": ["population"]},
         ]
         self.editable_params = [
             {"key": "population_exponent", "max": 0.1,},

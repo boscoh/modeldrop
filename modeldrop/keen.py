@@ -110,12 +110,10 @@ class KeenDynamicEconomyModel(BaseModel):
             {"key": "investSlope", "max": 30, "min": -30},
             {"key": "investXOrigin", "max": 0.5, "min": -0.5},
         ]
-        self.var_plots = [
-            {"key": "Share", "vars": ["bankShare", "wageShare", "profitShare"],},
-            {"key": "People", "vars": ["population", "labor"]},
-            {"key": "Output", "vars": ["output", "wages", "debt", "profit", "bank"]},
-        ]
-        self.fn_plots = [
+        self.plots = [
+            {"title": "Share", "vars": ["bankShare", "wageShare", "profitShare"],},
+            {"title": "People", "vars": ["population", "labor"]},
+            {"title": "Output", "vars": ["output", "wages", "debt", "profit", "bank"]},
             {"fn": "wageFn", "xlims": [0, 1], "var": "laborFraction"},
             {"fn": "investFn", "xlims": [-0.5, 0.5], "var": "profitRate"},
         ]

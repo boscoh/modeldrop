@@ -47,9 +47,9 @@ class EpidemiologySirModel(BaseModel):
         self.add_to_dvars_from_flows()
 
     def setup_ui(self):
-        self.var_plots = [
-            {"key": "Populations", "vars": ["susceptible", "infectious", "recovered"]},
-            {"key": "Effective Reproduction Number", "vars": ["rn"]},
+        self.plots = [
+            {"title": "Populations", "vars": ["susceptible", "infectious", "recovered"]},
+            {"title": "Effective Reproduction Number", "vars": ["rn"]},
         ]
         self.editable_params = [
             {"key": "time", "max": 1000,},

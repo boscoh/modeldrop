@@ -54,11 +54,9 @@ class GoodwinBusinessCycleModel(BaseModel):
             {"key": "productivityRate", "max": 0.1,},
         ]
 
-        self.var_plots = [
-            {"key": "Share", "vars": ["wageShare", "profitShare"]},
-            {"key": "Output", "vars": ["output", "wages"]},
-            {"key": "People", "vars": ["population", "labor"]},
-        ]
-        self.fn_plots = [
+        self.plots = [
+            {"title": "Share", "vars": ["wageShare", "profitShare"]},
+            {"title": "Output", "vars": ["output", "wages"]},
+            {"title": "People", "vars": ["population", "labor"]},
             {"fn": "wageChange", "xlims": [0.8, 0.9999]},
         ]

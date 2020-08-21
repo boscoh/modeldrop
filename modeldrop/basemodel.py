@@ -4,13 +4,7 @@ import math
 __doc__ = """
 """
 
-# TODO: check editable parameters
-# TODO: check plots
-# TODO: check dvars and vars match
-
 from scipy.integrate import odeint
-
-logger = logging.getLogger(__name__)
 
 
 class AttrDict(dict):
@@ -48,7 +42,7 @@ class BaseModel:
         self.solution = AttrDict()
 
         self.editable_params = []
-        self.var_plots = []
+        self.plots = []
         self.fn_plots = []
 
         self.setup()
@@ -182,13 +176,14 @@ class BaseModel:
         self.run()
         self.calc_aux_var_solutions()
         result = []
-        for plot in self.var_plots:
-            graph = self.make_output_graph(
-                "plot-" + plot["key"], plot["key"], plot["vars"]
-            )
-            result.append(graph)
-        for plot in self.fn_plots:
-            graph = self.make_fn_graph("plot-" + plot["fn"], plot["fn"], plot["xlims"])
+        for plot in self.plots:
+            if "title" in plot:
+                graph = self.make_output_graph(
+                    "plot-" + plot["key"], plot["key"], plot["vars"]
+                )
+                result.append(graph)
+            elif "fn" in plot:
+                graph = self.make_fn_graph("plot-" + plot["fn"], plot["fn"], plot["xlims"])
             result.append(graph)
         return result
 
@@ -205,11 +200,17 @@ class BaseModel:
             if v not in self.var:
                 raise Exception(f"dvar {v} has no matching var for self.init_var")
 
-        for p in self.var_plots:
-            for v in p["vars"]:
-                if v not in self.var and v not in self.aux_var:
+        for p in self.plots:
+            if "vars" in p:
+                for v in p["vars"]:
+                    if v not in self.var and v not in self.aux_var:
+                        raise Exception(
+                            f'plot {p["title"]} has var {v} not in self.vars nor in self.aux_vars'
+                        )
+            if "fn" in p:
+                if p["fn"] not in self.fns:
                     raise Exception(
-                        f'plot {p["key"]} has var {v} not in self.vars nor in self.aux_vars'
+                        f'plot {p["fn"]} has fn {p["fn"]} not in self.fns'
                     )
 
         for p in self.editable_params:
