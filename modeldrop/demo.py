@@ -1,11 +1,15 @@
 import sys
 
-from modeldrop.app import DashModelAdaptor, open_url_in_background
+from modeldrop.app import show_models
 from modeldrop.basemodel import BaseModel
 
 
-class DemoModel(BaseModel):
+class TurchinEliteDemographicModel(BaseModel):
     def setup(self):
+        self.url = (
+            "https://github.com/boscoh/modeldrop/blob/master/modeldrop/demo.py"
+        )
+
         self.param.r0 = 2
         self.param.b1 = 0.02
         self.param.b2 = 0.5
@@ -24,15 +28,9 @@ class DemoModel(BaseModel):
         self.param.init_e = 0.01
         self.param.init_s = 0.0
 
-        self.init_var.p = 2
-        self.init_var.e = 0.01
-        self.init_var.s = 0.0
-
         self.setup_plots()
 
     def init_vars(self):
-        super().init_vars()
-
         self.var.p = self.param.init_p
         self.var.e = self.param.init_e
         self.var.s = self.param.init_s
@@ -43,7 +41,6 @@ class DemoModel(BaseModel):
             return 1 + self.param.carryCapacityDiff * (
                 state / (self.param.stateAtHalfCapacity + state)
             )
-
         self.fns["carryCapacityFromStateRevenue"] = fn
 
     def calc_aux_vars(self):
@@ -62,7 +59,7 @@ class DemoModel(BaseModel):
 
     def setup_plots(self):
         self.plots = [
-            {"key": "people", "vars": ["p", "e", "s"], "ymin": -100, "ymax": 100},
+            {"title": "people", "vars": ["p", "e", "s"], "ymin": -100, "ymax": 100},
         ]
         self.fn_plots = [
             {"fn": "carryCapacityFromStateRevenue", "xlims": [0, 100], "ymin": 0},
@@ -73,23 +70,6 @@ class DemoModel(BaseModel):
         self.extract_editable_params()
 
 
-def show_models(models, argv):
-    port = "8050"
-    if "-o" in argv:
-        open_url_in_background(f"http://127.0.0.1:{port}/")
-    is_debug = "-d" in argv
-    DashModelAdaptor(models).run_server(port=port, is_debug=is_debug)
-
-
 if __name__ == "__main__":
-    import logging
-
-    logging.basicConfig(level=logging.DEBUG)
-
-    model = DemoModel()
-
-    # for graph in model.make_graphs():
-    #     graphing.write_graph(graph)
-    # os.system("open plot-*.png")
-
+    model = TurchinEliteDemographicModel()
     show_models([model], sys.argv)
