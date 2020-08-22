@@ -383,13 +383,19 @@ class DashModelAdaptor(dict):
                 min_y = min(all_y_vals)
                 max_y = max(all_y_vals)
 
+                if plot.get("ymin_cutoff") is not None:
+                    if min_y < plot["ymin_cutoff"]:
+                        min_y = plot["ymin_cutoff"]
+
+                if plot.get("ymax_cutoff") is not None:
+                    if max_y > plot["ymax_cutoff"]:
+                        max_y = plot["ymax_cutoff"]
+
                 if plot.get("ymin") is not None:
-                    if min_y < plot["ymin"]:
-                        min_y = plot["ymin"]
+                    min_y = plot["ymin"]
 
                 if plot.get("ymax") is not None:
-                    if max_y > plot["ymax"]:
-                        max_y = plot["ymax"]
+                    max_y = plot["ymax"]
 
                 figure = {
                     "data": data,
