@@ -27,7 +27,9 @@ class PropertyVsFundInvestmentModel(BaseModel):
 
     def init_vars(self):
         self.param.paymentRate = get_min_payment(
-            self.param.initialProperty, self.param.interestRate, self.param.mortgageLength,
+            self.param.initialProperty,
+            self.param.interestRate,
+            self.param.mortgageLength,
         )
 
         self.var.property = self.param.initialProperty
@@ -63,9 +65,7 @@ class PropertyVsFundInvestmentModel(BaseModel):
         self.dvar.totalInterest = self.aux_var.interestPaid
         self.dvar.property = self.param.propertyRate * self.var.property
         if self.var.principal >= 0:
-            self.dvar.principal = -(
-                self.param.paymentRate - self.aux_var.interestPaid
-            )
+            self.dvar.principal = -(self.param.paymentRate - self.aux_var.interestPaid)
         else:
             self.dvar.principal = 0
         self.dvar.fund = self.param.fundRate * self.var.fund + self.aux_var.fundChange

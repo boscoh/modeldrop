@@ -18,10 +18,10 @@ class TurchinEliteDemographicModel(BaseModel):
         self.param.statePeaceModifier = 5
         self.param.eliteExploitationFactor = 4
         self.param.initProductionDecline = 0.5
-        self.param.finalAdjustedProductionDecline = 0.2
+        self.param.finalProductionDecline = 0.2
         self.param.stateAtHalfChange = 0.07
         self.param.stateTaxRate = 1
-        self.param.stateExpenditureRate = 0.01
+        self.param.stateEmploymentRate = 0.01
 
         self.param.initProducer = 0.5
         self.param.initElite = 0.02
@@ -36,7 +36,7 @@ class TurchinEliteDemographicModel(BaseModel):
 
         self.fns.productionDeclineFn = make_approach_fn(
             self.param.initProductionDecline,
-            self.param.finalAdjustedProductionDecline,
+            self.param.finalProductionDecline,
             self.param.stateAtHalfChange,
         )
 
@@ -77,7 +77,7 @@ class TurchinEliteDemographicModel(BaseModel):
         self.dvar.state = 0
         if self.dvar.elite > 0:
             self.dvar.state += self.param.stateTaxRate * self.dvar.elite
-        self.dvar.state -= self.param.stateExpenditureRate * self.var.elite
+        self.dvar.state -= self.param.stateEmploymentRate * self.var.elite
         if self.dvar.state + self.var.state < 0:
             self.dvar.state = -self.var.state
 
@@ -93,7 +93,11 @@ class TurchinEliteDemographicModel(BaseModel):
                 "vars": ["totalProduct", "producerShare", "eliteShare"],
                 "ymin": 0,
             },
-            {"title": "Producer Carrying Capacity", "vars": ["producer", "carry"], "ymin": 0,},
+            {
+                "title": "Producer Carrying Capacity",
+                "vars": ["producer", "carry"],
+                "ymin": 0,
+            },
             {"fn": "productionDeclineFn", "xlims": [0, 1], "ymin": 0, "var": "state"},
         ]
         self.editable_params = [

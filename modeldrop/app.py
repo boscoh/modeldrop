@@ -234,32 +234,9 @@ class DashModelAdaptor(dict):
             className="pt-3 pb-2",
             in_navbar=False,
             nav=False,
-            label="Models",
+            label="modeldrop::models",
             color="info",
             style={"listStyleType": "none"},
-        )
-
-    def make_nav_bar(self):
-        return dbc.Navbar(
-            [
-                html.A(
-                    dbc.Row(
-                        [
-                            dbc.Col(
-                                dbc.NavbarBrand(
-                                    self.title, id="model-title", className="ml-2"
-                                )
-                            ),
-                        ],
-                        align="center",
-                        no_gutters=True,
-                    ),
-                    href="#",
-                ),
-            ],
-            dark=False,
-            color="white",
-            style={"border-bottom": "1px solid #AAA"},
         )
 
     def make_parameter_div(self):
@@ -308,6 +285,7 @@ class DashModelAdaptor(dict):
 
         return html.Div(
             children=children,
+            className="text-left",
             style={
                 "fontSize": "0.8em",
                 "letterSpacing": "0.05em",
@@ -317,8 +295,14 @@ class DashModelAdaptor(dict):
 
     def make_graphs_children(self):
         children = [
-            self.make_models_dropdown_menu(),
-            html.Div(html.H3("Model"), id="page-title"),
+            dbc.Navbar(
+                [self.make_models_dropdown_menu(), html.Div(),],
+                dark=False,
+                className="pl-0 mb-3",
+                sticky="top",
+                color="white",
+            ),
+            html.Div(id="page-title"),
             html.Br(),
         ]
         model = self.model
@@ -452,14 +436,15 @@ class DashModelAdaptor(dict):
                     xs=12,
                     lg=3,
                     md=4,
-                    sm=5,
+                    sm=4,
                     style={
-                        "borderRight": "1px solid #CCC",
+                        "borderRight": "1px solid #DDD",
                         # "backgroundColor": "#EEE",
+                        "marginTop": "130px",
                         "overflow": "scroll",
                         "paddingLeft": "20px",
                         "boxSizing": "border-box",
-                        "height": "calc(100vh - 56px)",
+                        "height": "calc(100vh - 130px)",
                     },
                 ),
                 dbc.Col(
@@ -469,13 +454,15 @@ class DashModelAdaptor(dict):
                         style={
                             "overflow": "scroll",
                             "boxSizing": "border-box",
-                            "height": "calc(100vh - 56px)",
+                            "padding-left": "30px",
+                            "padding-right": "30px",
+                            "height": "calc(100vh)",
                         },
                     ),
                     xs=12,
                     lg=9,
                     md=8,
-                    sm=7,
+                    sm=8,
                 ),
             ]
         )
@@ -487,8 +474,7 @@ class DashModelAdaptor(dict):
                 dcc.Location(id="url", refresh=False),
                 # object to start polling server to trigger events
                 dcc.Interval(id="interval-component", interval=1000, n_intervals=0),
-                self.make_nav_bar(),
-                dbc.Container(id="content", fluid=1,),
+                dbc.Container(id="content",),
             ],
             id="page_layout",
         )
@@ -504,11 +490,7 @@ class DashModelAdaptor(dict):
             return send_from_directory(static_folder, path)
 
         @app.callback(
-            [
-                Output("content", "children"),
-                Output("model-title", "children"),
-                Output("page-title", "children"),
-            ],
+            [Output("content", "children"), Output("page-title", "children"),],
             [Input("url", "pathname")],
         )
         def display_page(pathname):
@@ -521,11 +503,12 @@ class DashModelAdaptor(dict):
                             self.model = model
             result = [
                 self.make_content_children(),
-                [f"Modeldrop :: {self.model.name}"],
-                [html.H3(self.model.name)],
+                [html.H2(self.model.name, className="mt-5")],
             ]
-            if hasattr(self.model, 'url'):
-                result[-1].append(html.Div(html.A("Python source", href=self.model.url)))
+            if hasattr(self.model, "url"):
+                result[-1].append(
+                    html.Div(html.A("Python source", href=self.model.url))
+                )
             return result
 
         # add callback for toggling the collapse on small screens

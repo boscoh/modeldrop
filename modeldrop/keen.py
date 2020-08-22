@@ -111,7 +111,12 @@ class KeenDynamicEconomyModel(BaseModel):
             {"key": "investXOrigin", "max": 0.5, "min": -0.5},
         ]
         self.plots = [
-            {"title": "Share", "vars": ["bankShare", "wageShare", "profitShare"],},
+            {
+                "title": "Share",
+                "vars": ["bankShare", "wageShare", "profitShare"],
+                "ymin_cutoff": -0.5,
+                "ymax_cutoff": 1.5,
+            },
             {"title": "People", "vars": ["population", "labor"]},
             {"title": "Output", "vars": ["output", "wages", "debt", "profit", "bank"]},
             {"fn": "wageFn", "xlims": [0, 1], "var": "laborFraction"},

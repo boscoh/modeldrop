@@ -60,7 +60,8 @@ class LoktaVolterraEcologyModel(BaseModel):
                     \\frac{d}{dt}(predator) = digestionRate \\times prey \\times predator - predatorDeathRate \\times predator
                     ```
                     """,
-                "vars": ["predator", "prey"], "ymin": -100, "ymax": 100},
+                "vars": ["predator", "prey"],
+            },
         ]
         self.editable_params = [
             {"key": "time", "max": 300},

@@ -183,7 +183,9 @@ class BaseModel:
                 )
                 result.append(graph)
             elif "fn" in plot:
-                graph = self.make_fn_graph("plot-" + plot["fn"], plot["fn"], plot["xlims"])
+                graph = self.make_fn_graph(
+                    "plot-" + plot["fn"], plot["fn"], plot["xlims"]
+                )
             result.append(graph)
         return result
 
@@ -209,9 +211,7 @@ class BaseModel:
                         )
             if "fn" in p:
                 if p["fn"] not in self.fns:
-                    raise Exception(
-                        f'plot {p["fn"]} has fn {p["fn"]} not in self.fns'
-                    )
+                    raise Exception(f'plot {p["fn"]} has fn {p["fn"]} not in self.fns')
 
         for p in self.editable_params:
             if p["key"] not in self.param:
@@ -297,4 +297,5 @@ def make_approach_fn(y_init, y_final, x_at_midpoint):
             return y_init
         diff_g = y_final - y_init
         return y_init + diff_g * (x / (x_at_midpoint + x))
+
     return fn
