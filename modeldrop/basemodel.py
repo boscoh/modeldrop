@@ -289,3 +289,12 @@ def is_key_in_list(p_list, **kwargs):
             if p[k] == v:
                 return True
     return False
+
+
+def make_approach_fn(y_init, y_final, x_at_midpoint):
+    def fn(x):
+        if x < 0:
+            return y_init
+        diff_g = y_final - y_init
+        return y_init + diff_g * (x / (x_at_midpoint + x))
+    return fn
