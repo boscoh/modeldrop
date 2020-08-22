@@ -49,7 +49,10 @@ class StandardThreePartEpidemiologyModel(BaseModel):
 
     def setup_ui(self):
         self.plots = [
-            {"title": "Populations", "vars": ["susceptible", "infectious", "recovered"]},
+            {
+                "title": "Populations",
+                "vars": ["susceptible", "infectious", "recovered"],
+            },
             {"title": "Effective Reproduction Number", "vars": ["rn"]},
         ]
         self.editable_params = [

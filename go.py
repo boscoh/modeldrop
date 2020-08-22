@@ -19,13 +19,13 @@ is_debug = "-d" in sys.argv
 
 adaptor = DashModelAdaptor(
     [
-        KeenDynamicEconomyModel(),
         LoktaVolterraEcologyModel(),
         StandardThreePartEpidemiologyModel(),
+        GoodwinBusinessCycleModel(),
+        KeenDynamicEconomyModel(),
         TurchinDemographicStateModel(),
         TurchinEliteDemographicModel(),
         PropertyVsFundInvestmentModel(),
-        GoodwinBusinessCycleModel(),
     ]
 )
 server = adaptor.server

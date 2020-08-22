@@ -25,6 +25,7 @@ class PopModel(BaseModel):
 if __name__ == "__main__":
     import os
     from modeldrop import graphing
+
     for graph in PopModel().make_graphs():
         graphing.write_graph(graph)
     os.system("open plot-*.png")

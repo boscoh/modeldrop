@@ -20,11 +20,13 @@ class TurchinDemographicStateModel(BaseModel):
     def init_vars(self):
         y_diff = self.param.carryCapacityDiff
         x_at_half_y = self.param.stateRevenueAtHalfCapacity
+
         def fn(x):
             if x < 0:
                 return 1
             else:
                 return 1 + y_diff * (x / (x_at_half_y + x))
+
         self.fns.carryingCapacityFn = fn
         self.var.populationDensity = 0.2
         self.var.stateRevenue = 0
@@ -68,6 +70,6 @@ class TurchinDemographicStateModel(BaseModel):
             {"key": "maxSurplus", "max": 2,},
             {"key": "taxOnSurplus", "max": 2,},
             {"key": "growth", "max": 0.1,},
-            {"key": "stateRevenueAtHalfCapacity", "max": 50, },
-            {"key": "carryCapacityDiff", "max": 10, },
+            {"key": "stateRevenueAtHalfCapacity", "max": 50,},
+            {"key": "carryCapacityDiff", "max": 10,},
         ]
