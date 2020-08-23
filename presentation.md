@@ -4,6 +4,8 @@
 
 ## Intended Audience
 
+https://docs.google.com/presentation/d/1RbOMmrL-RHGXhxnXTlHATnBKRCpU0SBOC2h4TulBia4/edit#slide=id.g91dadeb431_0_6
+
 People who want to be exposed to fascinating mathematical models of the world, and who would like to interactively explore them. For those with a bit more scientific background, this talk will show how easy it can be to make these models in python and may encourage researchers to try python as a plausible tool to use.
 
 What is a model?

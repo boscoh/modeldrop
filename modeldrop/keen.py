@@ -5,7 +5,7 @@ class KeenDynamicEconomyModel(BaseModel):
     def setup(self):
         self.url = "https://github.com/boscoh/modeldrop/blob/master/modeldrop/keen.py"
 
-        self.param.time = 150
+        self.param.time = 200
         self.param.dt = 0.1
 
         self.param.birthRate = 0.01
@@ -119,6 +119,6 @@ class KeenDynamicEconomyModel(BaseModel):
             },
             {"title": "People", "vars": ["population", "labor"]},
             {"title": "Output", "vars": ["output", "wages", "debt", "profit", "bank"]},
-            {"fn": "wageFn", "xlims": [0, 1], "var": "laborFraction"},
+            {"fn": "wageFn", "xlims": [0, 1.1], "var": "laborFraction"},
             {"fn": "investFn", "xlims": [-0.5, 0.5], "var": "profitRate"},
         ]
