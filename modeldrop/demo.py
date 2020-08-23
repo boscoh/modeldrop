@@ -13,13 +13,13 @@ class TurchinEliteDemographicModel(BaseModel):
         self.param.maxProductionRate = 2
         self.param.producerBirth = 0.02
         self.param.producerDeath = 0.02
-        self.param.eliteBirth = 0.05
-        self.param.maxEliteDeath = 0.14
-        self.param.statePeaceModifier = 5
-        self.param.eliteExploitationFactor = 4
         self.param.initProductionDecline = 0.5
-        self.param.finalProductionDecline = 0.2
-        self.param.stateAtHalfChange = 0.07
+        self.param.eliteBirth = 0.05
+        self.param.eliteAtHalfExtraction = 0.3
+        self.param.maxEliteDeath = 0.12
+        self.param.stateAtHalfPeace = 0.3
+        self.param.stateAtHalfCarry = 0.07
+        self.param.finalStateProductionDecline = 0.2
         self.param.stateTaxRate = 1
         self.param.stateEmploymentRate = 0.01
 
@@ -36,23 +36,25 @@ class TurchinEliteDemographicModel(BaseModel):
 
         self.fns.productionDeclineFn = make_approach_fn(
             self.param.initProductionDecline,
-            self.param.finalProductionDecline,
-            self.param.stateAtHalfChange,
+            self.param.finalStateProductionDecline,
+            self.param.stateAtHalfCarry,
         )
 
     def calc_aux_vars(self):
         self.aux_var.productionDecline = self.fns.productionDeclineFn(self.var.state)
+
         self.aux_var.totalProduct = (
             self.var.producer
             * self.param.maxProductionRate
             * (1 - self.aux_var.productionDecline * self.var.producer)
         )
-        self.aux_var.producerShare = (
-            1
-            / (1 + self.param.eliteExploitationFactor * self.var.elite)
-            * self.aux_var.totalProduct
+
+        self.aux_var.eliteFraction = self.var.elite / (
+            self.param.eliteAtHalfExtraction + self.var.elite
         )
-        self.aux_var.eliteShare = self.aux_var.totalProduct - self.aux_var.producerShare
+        self.aux_var.eliteShare = self.aux_var.totalProduct * self.aux_var.eliteFraction
+        self.aux_var.producerShare = self.aux_var.totalProduct - self.aux_var.eliteShare
+
         self.aux_var.carry = (
             (
                 self.param.maxProductionRate * self.param.producerBirth
@@ -63,17 +65,23 @@ class TurchinEliteDemographicModel(BaseModel):
             / self.param.producerBirth
         )
 
+        self.aux_var.deathModifier = 1 - self.var.state / (
+            self.param.stateAtHalfPeace + self.var.state
+        )
+        self.aux_var.eliteDeathRate = self.param.maxEliteDeath * self.aux_var.deathModifier
+        self.aux_var.eliteDeath = self.var.elite * self.aux_var.eliteDeathRate
+
     def calc_dvars(self, t):
         self.dvar.producer = (
             self.param.producerBirth * self.aux_var.producerShare
             - self.param.producerDeath * self.var.producer
         )
+
         self.dvar.elite = (
             self.param.eliteBirth * self.aux_var.eliteShare
-            - self.var.elite
-            * self.param.maxEliteDeath
-            / (1 + self.param.statePeaceModifier * self.var.state)
+            - self.aux_var.eliteDeath
         )
+
         self.dvar.state = 0
         if self.dvar.elite > 0:
             self.dvar.state += self.param.stateTaxRate * self.dvar.elite
@@ -94,8 +102,13 @@ class TurchinEliteDemographicModel(BaseModel):
                 "ymin": 0,
             },
             {
-                "title": "Producer Carrying Capacity",
+                "title": "State Action on Producer Capacity",
                 "vars": ["producer", "carry"],
+                "ymin": 0,
+            },
+            {
+                "title": "State Action on Elites",
+                "vars": ["eliteDeathRate", "eliteDeath"],
                 "ymin": 0,
             },
             {"fn": "productionDeclineFn", "xlims": [0, 1], "ymin": 0, "var": "state"},

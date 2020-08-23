@@ -1,4 +1,4 @@
-from .basemodel import BaseModel
+from .basemodel import BaseModel, make_approach_fn
 
 
 class TurchinDemographicStateModel(BaseModel):
@@ -13,21 +13,15 @@ class TurchinDemographicStateModel(BaseModel):
         self.param.growth = 0.02
         self.param.expenditurePerCapita = 0.25
         self.param.stateRevenueAtHalfCapacity = 10
-        self.param.carryCapacityDiff = 3
+        self.param.maxCarryCapacity = 3
 
         self.setup_ui()
 
     def init_vars(self):
-        y_diff = self.param.carryCapacityDiff
-        x_at_half_y = self.param.stateRevenueAtHalfCapacity
-
-        def fn(x):
-            if x < 0:
-                return 1
-            else:
-                return 1 + y_diff * (x / (x_at_half_y + x))
-
-        self.fns.carryingCapacityFn = fn
+        self.fns.carryingCapacityFn = make_approach_fn(
+            1, self.param.maxCarryCapacity,
+            self.param.stateRevenueAtHalfCapacity
+        )
         self.var.populationDensity = 0.2
         self.var.stateRevenue = 0
 
@@ -71,5 +65,5 @@ class TurchinDemographicStateModel(BaseModel):
             {"key": "taxOnSurplus", "max": 2,},
             {"key": "growth", "max": 0.1,},
             {"key": "stateRevenueAtHalfCapacity", "max": 50,},
-            {"key": "carryCapacityDiff", "max": 10,},
+            {"key": "maxCarryCapacity", "max": 10,},
         ]
