@@ -86,15 +86,6 @@ class PropertyVsFundInvestmentModel(BaseModel):
 
         self.plots = [
             {
-                "title": "Month",
-                "vars": [
-                    "paymentMonth",
-                    "interestMonth",
-                    "rentMonth",
-                    "fundChangeMonth",
-                ],
-            },
-            {
                 "title": "Property",
                 "vars": [
                     "paid",
@@ -103,6 +94,105 @@ class PropertyVsFundInvestmentModel(BaseModel):
                     "propertyProfit",
                     "principal",
                 ],
+                "markdown": """
+                    There's that proverb which says rent money is dead money. But interest
+                    repayment is also dead money. Maybe that could
+                    have been better put in an investment fund. So which is better in the 
+                    long run? 
+                    
+                    One big problem with thinking about the profitability of property is 
+                    that it's hard to visualize interest repayments. 
+                    So here, we've provided a whole raft of interactive visualization 
+                    to help you compare property to investment funds.
+                    
+                    ### Property
+                    
+                    The first thing to do is express the growth in a property price
+                    as a standard growth equation:
+                    
+                    ```math
+                    \\frac{d}{dt}(property) = property \\times propertyGrowthRate
+                    ```
+                    
+                    We assume that you made a bank loan with a deposit, leaving you with 
+                    a principal. Then the total interest paid is a growth equation based on 
+                    the principal:
+                    
+                    ```math
+                    \\frac{d}{dt}(totalInterest) = principal \\times interestRate
+                    ```
+                    
+                    The principal will decline with a death rate
+                    equal to the portion of the mortgage payment not eaten by 
+                    interest repayments:
+                    
+                    ```math
+                    principalRepayment = payment - principal \\times interestRate
+                    ```
+                    
+                    ```math
+                    \\frac{d}{dt}(principal) = -principalRepayment
+                    ```
+                    
+                    The mortgage payment (per year) can be computed from this standard equation:
+                    
+                    ```math
+                    payment =  principal \\times \\frac{ interestRate}{1 - interestRate \\times (1 + interestRate)^{-years})}
+                    ```
+                    """,
+
             },
-            {"title": "Fund", "vars": ["paid", "fund", "totalRent", "fundProfit"],},
+            {
+                "title": "Month",
+                "vars": [
+                    "paymentMonth",
+                    "interestMonth",
+                    "rentMonth",
+                    "fundChangeMonth",
+                ],
+                "markdown": """
+                    ### Monthly Expenses comparison
+                    
+                    Finally, as a practical cash-flow concern, we can look
+                    at how the differences play out on a monthly basis. We
+                    cannot make a perfect comparison with the incomes as 
+                    the rent inflation in later years may force us to pay more
+                    per month than the minimum payment per month would allow.
+                    
+                    If we're looking at dead money paid, it would be comparing
+                    the payment of rent versus interest, on a monthly basis, 
+                    for different scenarios.
+                    """,
+            },
+
+            {
+                "title": "Fund", "vars": ["paid", "fund", "totalRent", "fundProfit"],
+                "markdown": """
+
+                    ### Investment Fund and Renting
+                    
+                    Instead of buying a property with interest, one could invest the
+                    same money in an investment fund. To make the comparison, we first
+                    put the deposit in an investment fund. 
+                    
+                    Then we take the standard mortgage payment as the equivalent of our income.
+                    We put a chunk of that income into rent, where rents typically grows with inflation:
+                    
+                    ```math
+                    \\frac{d}{dt}(rent) = inflationRate \\times rent
+                    ``
+                    
+                    ```math
+                    \\frac{d}{dt}(totalRent) = rent
+                    ```
+                    
+                    And thus the fund payment is what is left over, giving the
+                    fund growth equation:
+                    
+                    ```math
+                    \\frac{d}{dt}(fund) = payment - rent
+                    ```
+
+                    """,
+            },
         ]

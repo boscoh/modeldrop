@@ -15,7 +15,23 @@ Mathematical model?
 
 ## Outline
 
-1. Background in modelling -> worked in 3 epidemiology labs Burnet, Monash, James Cook University
+
+1. Introduce myself - 
+  - in the data science, lots of sexy stuff
+   of data, we overlook some methods 1665
+   calculus
+  - for instance technique ode - ordinary differential equations
+  us
+  - Newton -
+  used in physics, engineering continuous since 
+  - worked as comp bio
+     - models with hundreds of atoms - huge systems of equations
+  -  worked in 3 epidemiology labs Burnet, Monash, James Cook University
+    - learnt epi models - ode in population
+  - converted matlab code to python
+  - explore models in spare time
+  - all derive from population models lokta-volterra model
+   
   1. love modelling
   2. love python - rework traditional ODE modleing in PYthon
   3. learnt the basic calculus approach to populations 
