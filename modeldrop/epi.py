@@ -52,6 +52,42 @@ class StandardThreePartEpidemiologyModel(BaseModel):
             {
                 "title": "Populations",
                 "vars": ["susceptible", "infectious", "recovered"],
+                "markdown": """
+                    The SIR model is the most basic epidemiological model of 
+                    a transmissible disease. It consists of 3 populations (called
+                    compartments): 
+                    
+                    - Susceptible patients don't have the disease,
+                    - Infectious have caught the disease and can transmit it,  
+                    - Recovered patients are immune      
+                    
+                    The transmissability of disease is through the force of infection:
+                    
+                    ```math
+                    forceOfInfection = \\frac{infectious}{population} \\times \\frac{R_0}{infectiousPeriod}
+                    ```
+                    
+                    ```math
+                    recoverRate = \\frac{1}{infectiousPerod}
+                    ```
+                    
+                    where $`R_0`$ is the total number of people an infectious person would 
+                    infect during the infectious period.
+                    
+                    This type of model is often called a compartmental model
+                    as the change equations are balanced growth/decline equations where
+                    the decline in one compartment (population) results in growth in another compartment:
+                    
+                    ```math
+                    \\frac{d}{dt}susceptible = - susceptible \\times forceOfInfection
+                    ```
+                    ```math
+                    \\frac{d}{dt}infectious = - infectious \\times recoverRate + susceptible \\times forceOfInfection 
+                    ```
+                    ```math
+                    \\frac{d}{dt}recovered = infectious \\times recoverRate
+                    ```
+                    """,
             },
             {"title": "Effective Reproduction Number", "vars": ["rn"]},
         ]

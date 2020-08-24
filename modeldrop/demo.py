@@ -68,8 +68,13 @@ class TurchinEliteDemographicModel(BaseModel):
         self.aux_var.deathModifier = 1 - self.var.state / (
             self.param.stateAtHalfPeace + self.var.state
         )
-        self.aux_var.eliteDeathRate = self.param.maxEliteDeath * self.aux_var.deathModifier
+        self.aux_var.eliteDeathRate = (
+            self.param.maxEliteDeath * self.aux_var.deathModifier
+        )
         self.aux_var.eliteDeath = self.var.elite * self.aux_var.eliteDeathRate
+
+        self.aux_var.elitePerCapita = self.aux_var.eliteShare / self.var.elite
+        self.aux_var.producerPerCapita = self.aux_var.producerShare / self.var.producer
 
     def calc_dvars(self, t):
         self.dvar.producer = (
@@ -78,8 +83,7 @@ class TurchinEliteDemographicModel(BaseModel):
         )
 
         self.dvar.elite = (
-            self.param.eliteBirth * self.aux_var.eliteShare
-            - self.aux_var.eliteDeath
+            self.param.eliteBirth * self.aux_var.eliteShare - self.aux_var.eliteDeath
         )
 
         self.dvar.state = 0
@@ -98,7 +102,12 @@ class TurchinEliteDemographicModel(BaseModel):
             },
             {
                 "title": "Production Rate",
-                "vars": ["totalProduct", "producerShare", "eliteShare"],
+                "vars": ["producerShare", "eliteShare", "totalProduct"],
+                "ymin": 0,
+            },
+            {
+                "title": "Earnings Per Capita",
+                "vars": ["producerPerCapita", "elitePerCapita"],
                 "ymin": 0,
             },
             {

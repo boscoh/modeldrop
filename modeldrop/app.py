@@ -34,11 +34,8 @@ import numpy
 from dash import Dash
 from dash.dependencies import Input, Output, State
 from dash.exceptions import PreventUpdate
-import dash_dangerously_set_inner_html
 
 from flask import Flask, send_from_directory
-import markdown as md
-import markdown_katex
 import textwrap
 
 from .basemodel import BaseModel
@@ -47,9 +44,20 @@ from .basemodel import BaseModel
 logger = logging.getLogger(__name__)
 
 
+import markdown as md
+import markdown_katex
+import dash_dangerously_set_inner_html
+
+
 def md_to_html(md_text):
     md_text = textwrap.dedent(md_text)
     return md.markdown(md_text, extensions=["markdown_katex"])
+
+
+def make_md_div(md):
+    return html.Div(
+        dash_dangerously_set_inner_html.DangerouslySetInnerHTML(md_to_html(md))
+    )
 
 
 millnames = ["", "k", "m", "b", "t"]
@@ -135,12 +143,6 @@ def make_title(key):
     return s2.lower().title()
 
 
-def make_md_div(md):
-    return html.Div(
-        dash_dangerously_set_inner_html.DangerouslySetInnerHTML(md_to_html(md))
-    )
-
-
 class DashModelAdaptor(dict):
     def __init__(self, models):
         super().__init__()
@@ -193,7 +195,7 @@ class DashModelAdaptor(dict):
                 logger.info(f"slider_callback run {model.param}")
                 model.run()
                 model.calc_aux_var_solutions()
-                figures = self.get_figures(model)
+                figures = self.make_figures(model)
             except Exception as e:
                 traceback.print_exc()
                 logger.info(f"slider_callback exception: {e}...")
@@ -225,7 +227,7 @@ class DashModelAdaptor(dict):
     def make_models_dropdown_menu(self):
         """Create a dropdown menu component with the assets.
         """
-        menu_items = [
+        menu_items = [dbc.NavLink(f"Home", external_link=True, href=f"./")] + [
             dbc.NavLink(f"{model.name}", external_link=True, href=f"./{model.prefix}")
             for model in self.models
         ]
@@ -294,21 +296,28 @@ class DashModelAdaptor(dict):
         )
 
     def make_graphs_children(self):
-        children = [
+        result = [
             dbc.Navbar(
-                [self.make_models_dropdown_menu(), html.Div(),],
+                [self.make_models_dropdown_menu()],
                 dark=False,
-                className="pl-0 mb-3",
+                className="pl-0",
                 sticky="top",
                 color="white",
             ),
-            html.Div(id="page-title"),
+        ]
+
+        title = [html.H2(self.model.name, className="mt-5")]
+        if hasattr(self.model, "url"):
+            title.append(html.Div(html.A("[python source]", href=self.model.url)))
+
+        children = [
+            *title,
             html.Br(),
         ]
-        model = self.model
-        logger.info(f"make_graphs_div {model.name}")
 
-        for plot in model.plots:
+        logger.info(f"make_graphs_div {self.model.name}")
+
+        for plot in self.model.plots:
             graph = dcc.Graph(
                 id=plot["id"],
                 config={"responsive": True},
@@ -322,14 +331,17 @@ class DashModelAdaptor(dict):
             )
             if "markdown" in plot:
                 children.append(make_md_div(plot["markdown"]))
-            if "vars" in plot:
-                children.append(html.H4(plot["title"]))
-            elif "fn" in plot:
-                children.append(html.H4(make_title(plot["fn"])))
-            children.append(graph)
-        return children
 
-    def get_figures(self, model):
+            children.append(graph)
+
+        result.append(
+            html.Div(
+                children, style={"height": "calc(100vh - 80px", "overflow": "scroll"}
+            )
+        )
+        return result
+
+    def make_figures(self, model):
         result = []
 
         for plot in model.plots:
@@ -384,6 +396,7 @@ class DashModelAdaptor(dict):
                 figure = {
                     "data": data,
                     "layout": {
+                        "title": {"text": plot["title"], "font": {"size": 14}},
                         "margin": {"t": 40},
                         "xaxis": {"range": [min_x, max_x], "title": "Time"},
                         "yaxis": {"range": [min_y, max_y]},
@@ -416,6 +429,7 @@ class DashModelAdaptor(dict):
                 figure = {
                     "data": data,
                     "layout": {
+                        "title": {"text": make_title(plot["fn"]), "font": {"size": 14}},
                         "margin": {"t": 40},
                         "yaxis": {"range": [min_y, max_y]},
                     },
@@ -467,6 +481,71 @@ class DashModelAdaptor(dict):
             ]
         )
 
+    def make_home_content(self):
+        links = []
+        for model in self.models:
+            links.append(html.Li(html.A(f"{model.name}", href=f"./{model.prefix}")))
+        return dbc.Row(
+            [
+                dbc.Col(
+                    xs=12,
+                    lg=3,
+                    md=4,
+                    sm=4,
+                    style={
+                        "borderRight": "1px solid #DDD",
+                        "marginTop": "130px",
+                        "height": "calc(100vh - 130px)",
+                    },
+                ),
+                dbc.Col(
+                    html.Div(
+                        [
+                            dbc.Navbar(
+                                [self.make_models_dropdown_menu(), html.Div(),],
+                                dark=False,
+                                className="pl-0 mb-3",
+                                sticky="top",
+                                color="white",
+                            ),
+                            make_md_div(
+                                """
+
+                            <br>
+
+                            ### modeldrop
+                            
+                            <br>
+                            
+                            A Python library to explore
+                            dynamical models that use
+                            ordinary differential equations.
+                            
+                            <https://github.com/boscoh/modeldrop>
+                            
+                            Current Models
+                            """
+                            ),
+                            html.Ul(links),
+                            html.Br(),
+                        ],
+                        id="graphs",
+                        style={
+                            "overflow": "scroll",
+                            "boxSizing": "border-box",
+                            "padding-left": "30px",
+                            "padding-right": "30px",
+                            "height": "calc(100vh)",
+                        },
+                    ),
+                    xs=12,
+                    lg=9,
+                    md=8,
+                    sm=8,
+                ),
+            ]
+        )
+
     def make_layout(self):
         return html.Div(
             [
@@ -477,6 +556,7 @@ class DashModelAdaptor(dict):
                 dbc.Container(id="content",),
             ],
             id="page_layout",
+            style={"overflow": "hidden"},
         )
 
     def register_callbacks(self, app):
@@ -490,10 +570,14 @@ class DashModelAdaptor(dict):
             return send_from_directory(static_folder, path)
 
         @app.callback(
-            [Output("content", "children"), Output("page-title", "children"),],
-            [Input("url", "pathname")],
+            Output("content", "children"), [Input("url", "pathname")],
         )
         def display_page(pathname):
+            logger.info(f"display_page {pathname}")
+
+            if pathname is None or pathname == "/":
+                return self.make_home_content()
+
             if isinstance(pathname, str):
                 tokens = pathname.split("/")
                 if len(tokens) > 0:
@@ -501,15 +585,7 @@ class DashModelAdaptor(dict):
                     for model in self.models:
                         if token == model.prefix:
                             self.model = model
-            result = [
-                self.make_content_children(),
-                [html.H2(self.model.name, className="mt-5")],
-            ]
-            if hasattr(self.model, "url"):
-                result[-1].append(
-                    html.Div(html.A("Python source", href=self.model.url))
-                )
-            return result
+            return self.make_content_children()
 
         # add callback for toggling the collapse on small screens
         @app.callback(
