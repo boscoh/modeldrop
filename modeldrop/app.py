@@ -20,6 +20,7 @@ Installation:
 import logging
 import math
 import re
+import copy
 import threading
 import time
 import traceback
@@ -140,7 +141,8 @@ def make_title(key):
     """https://stackoverflow.com/a/1176023"""
     s1 = re.sub("(.)([A-Z][a-z]+)", r"\1 \2", key)
     s2 = re.sub("([a-z0-9])([A-Z])", r"\1 \2", s1)
-    return s2.lower().title()
+    s3 = s2.replace('_', ' ')
+    return s3.lower().title()
 
 
 class DashModelAdaptor(dict):
@@ -154,6 +156,8 @@ class DashModelAdaptor(dict):
             model.name = make_title(model.__class__.__name__)
 
             model.prefix = make_slug(model.name)
+
+            model.init_param = copy.deepcopy(model.param)
 
             for p in model.editable_params:
                 p["id"] = model.prefix + "-" + p["key"]
@@ -173,6 +177,8 @@ class DashModelAdaptor(dict):
         self.app = Dash(
             __name__, external_stylesheets=[dbc.themes.BOOTSTRAP], server=self.server
         )
+
+        self.app.title = 'modeldrop'
 
         self.app.layout = self.make_layout()
 
@@ -276,6 +282,7 @@ class DashModelAdaptor(dict):
                         step=step,
                         marks=mark_dict,
                         value=value,
+                        persistence_type='local',
                     ),
                     style={
                         "marginLeft": "15px",
@@ -320,7 +327,15 @@ class DashModelAdaptor(dict):
         for plot in self.model.plots:
             graph = dcc.Graph(
                 id=plot["id"],
-                config={"responsive": True},
+                config={"responsive": True,
+                        "displaylogo": False,
+                        "modeBarButtonsToRemove": [
+                            "lasso2d",
+                            "hoverClosestCartesian",
+                            "hoverCompareCartesian",
+                            "toggleSpikelines",
+                            "resetScale2d"
+                        ]},
                 style={"height": "405px"},
                 animate=True,
                 animation_options={
@@ -336,7 +351,7 @@ class DashModelAdaptor(dict):
 
         result.append(
             html.Div(
-                children, style={"height": "calc(100vh - 80px", "overflow": "scroll"}
+                children, style={"height": "calc(100vh - 80px", "padding-right": "30px", "overflow": "scroll"}
             )
         )
         return result
@@ -563,12 +578,6 @@ class DashModelAdaptor(dict):
 
         app.config["suppress_callback_exceptions"] = True
 
-        # Sets up the local `static` directory as the source for http://*.*.*/static/* files
-        @app.server.route("/static/<path>")
-        def static_file(path):
-            static_folder = Path().cwd() / "static"
-            return send_from_directory(static_folder, path)
-
         @app.callback(
             Output("content", "children"), [Input("url", "pathname")],
         )
@@ -586,27 +595,6 @@ class DashModelAdaptor(dict):
                         if token == model.prefix:
                             self.model = model
             return self.make_content_children()
-
-        # add callback for toggling the collapse on small screens
-        @app.callback(
-            Output("navbar-collapse", "is_open"),
-            [Input("navbar-toggler", "n_clicks")],
-            [State("navbar-collapse", "is_open")],
-        )
-        def toggle_navbar_collapse(n_clicks, is_open):
-            if n_clicks:
-                return not is_open
-            return is_open
-
-        @app.callback(
-            Output("counter", "children"), [Input("interval-component", "n_intervals")],
-        )
-        def poll_server(n_intervals):
-            # logger.info(f"poll_server n_interval={n_intervals}")
-            if n_intervals % 2 != 0:
-                raise PreventUpdate
-            else:
-                return n_intervals
 
         for model in self.models:
             outputs = [Output(p["id"], "figure") for p in model.plots]

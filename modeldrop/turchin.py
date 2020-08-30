@@ -46,63 +46,69 @@ class TurchinDemographicStateModel(BaseModel):
     def setup_ui(self):
         self.plots = [
             {
+                "markdown": """
+                    The Demographic Fiscal State model from Peter Turchin 
+                    examines the effects of a state that taxes a population 
+                    (fiscal) on the growth of a population (demographic). 
+                     
+                    First, we have a population that grows depending
+                    on the amount of surplus, or food that is produced:                    from paying taxes to the state:
+                    
+                    ```math
+                    \\frac{d}{dt}(population) = 
+                        populationGrowthRate 
+                        \\times population 
+                        \\times surplus 
+                    ```
+                    
+                    The population will rise and fall depending on the
+                    surplus produced, which will depend on  
+                    improvements to the carrying capacity:
+                    """,
                 "title": "People",
                 "vars": ["populationDensity", "carryingCapacity"],
                 "ymin": 0,
-                "markdown": """
-                    Demographic models examine the endogenous evolution of a state, based on different key factors.
-                    This particular model is Peter Turchin's Demographic Fiscal State Model and provides a simple model of how a state can
-                    improve the carrying capacity of its environment, which augments the population, but also precipitates a sudden decline.
-                     
-                    First, a state can organize a population to produce more food, which improves the growth rate of the population. This is
-                    represented by the surplus:
-                    
-                    ```math
-                    \\frac{d}{dt}(population) = populationGrowthRate \\times population \\times surplus 
-                    ```
-                    
-                    The model makes simple assumptions about how the surplus relates to 
-                    the carrying capacity and state revenue. In general the model shows how a state follows a simple growth and sudden decline simply due to internal dynamics
-                """,
             },
             {
+                "markdown": """
+                    First we postulate a simple function of how state revenue
+                    improves the carrying capacity. It is a simple monotonically
+                    increasing function that saturates to a given carrying
+                    capacity, beyond which the carrying capacity cannot be improved
+    
+                    ```math
+                    carryingCapacityFunction = 1 + capacityDiff \\times \\left( \\frac{revenue}{ revenueAtHalfCapacity + revenue}  \\right)
+                    ```
+                """,
                 "fn": "carryingCapacityFn",
                 "xlims": [0, 100],
                 "ymin": 0,
                 "var": "stateRevenue",
-                "markdown": """
-                First we postulate a simple function of how revenue
-                improves the carrying capacity. It is a simple monotoically
-                increasing function that saturates to a given carrying
-                capacity, modeling the fact that there is an upper limit 
-                to how much the carrying capacity can be improved
-
-                ```math
-                carryingCapacityFunction = 1 + capacityDiff \\times \\left( \\frac{revenue}{ revenueAtHalfCapacity + revenue}  \\right)
-                ```
-                """,
             },
             {
-                "title": "Surplus",
-                "vars": ["surplus"],
                 "markdown": """
-                    We define an expression for the surplus such that a 
-                    surplus will be produced if the population is
-                    below the carrying capacity, but if the 
+                    We define an expression for the surplus that will be
+                    positive if the population is
+                    below the carrying capacity. But if the 
                     population rises above the carrying capacity, crops will 
-                    fail and the surplus will go negative. 
-                    
-                    The surplus evolves over time as:
+                    fail and the surplus will go negative:                    
                     
                     ```math
-                    surplus = maxSurplus \\times \\left(  1 - \\frac{ population } { carryingCapacityFunction } \\right) 
+                    surplus = maxSurplus 
+                        \\times \\left(  
+                            1 - 
+                            \\frac{ population } { carryingCapacity } 
+                        \\right) 
                     ```
 
+                    This results in the changes of the surplus over time
+                    due to the intervention of the state in improving
+                    the carrying capacity:
                     """,
+                "title": "Surplus",
+                "vars": ["surplus"],
             },
             {
-                "title": "State Revenue",
-                "vars": ["stateRevenue"],
                 "markdown": """
                     For the state to improve the carrying capacity, it must have
                     sufficient revenue collected from the population. This revenue
@@ -114,6 +120,8 @@ class TurchinDemographicStateModel(BaseModel):
                     \\frac{d}{dt}(revenue) = tax \\times population \\times surplus - expenditurePerCapita * population
                     ```
                     """,
+                "title": "State Revenue",
+                "vars": ["stateRevenue"],
             },
         ]
 
