@@ -1,6 +1,3 @@
-import sys
-
-from .app import show_models
 from .basemodel import BaseModel
 
 
@@ -57,22 +54,23 @@ class StandardThreePartEpidemiologyModel(BaseModel):
                     a transmissible disease. It consists of 3 populations (called
                     compartments): 
                     
-                    - Susceptible patients don't have the disease,
-                    - Infectious have caught the disease and can transmit it,  
-                    - Recovered patients are immune      
+                    - Susceptible people don't have the disease,
+                    - Infectious people have caught the disease and can transmit it,  
+                    - Recovered people have become immune to the disease      
                     
                     The transmissability of disease is through the force of infection:
                     
                     ```math
-                    forceOfInfection = \\frac{infectious}{population} \\times \\frac{R_0}{infectiousPeriod}
+                    forceOfInfection = \\frac{infectious}{population} \\times \\frac{reproductionNumber}{infectiousPeriod}
                     ```
+                    where the reproduction number is the total number of people an infectious person would 
+                    infect during the infectious period.
+
+                    Infectious people will recover at the rate:
                     
                     ```math
                     recoverRate = \\frac{1}{infectiousPerod}
                     ```
-                    
-                    where $`R_0`$ is the total number of people an infectious person would 
-                    infect during the infectious period.
                     
                     This type of model is often called a compartmental model
                     as the change equations are balanced growth/decline equations where
@@ -94,11 +92,9 @@ class StandardThreePartEpidemiologyModel(BaseModel):
         self.editable_params = [
             {"key": "time", "max": 1000,},
             {"key": "infectiousPeriod", "max": 100,},
-            {"key": "reproductionNumber", "max": 25},
+            {"key": "reproductionNumber", "max": 15},
             {"key": "initialPrevalence", "max": 100000},
             {"key": "initialPopulation", "max": 100000},
         ]
 
 
-if __name__ == "__main__":
-    show_models([StandardThreePartEpidemiologyModel()], sys.argv)

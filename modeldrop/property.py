@@ -86,14 +86,6 @@ class PropertyVsFundInvestmentModel(BaseModel):
 
         self.plots = [
             {
-                "title": "Property",
-                "vars": [
-                    "paid",
-                    "property",
-                    "totalInterest",
-                    "propertyProfit",
-                    "principal",
-                ],
                 "markdown": """
                     There's that proverb which says rent money is dead money. But interest
                     repayment is also dead money. Maybe that could
@@ -140,16 +132,16 @@ class PropertyVsFundInvestmentModel(BaseModel):
                     payment =  principal \\times \\frac{ interestRate}{1 - interestRate \\times (1 + interestRate)^{-years})}
                     ```
                     """,
-
+                "title": "Property",
+                "vars": [
+                    "paid",
+                    "property",
+                    "totalInterest",
+                    "propertyProfit",
+                    "principal",
+                ],
             },
             {
-                "title": "Month",
-                "vars": [
-                    "paymentMonth",
-                    "interestMonth",
-                    "rentMonth",
-                    "fundChangeMonth",
-                ],
                 "markdown": """
                     ### Monthly Expenses comparison
                     
@@ -163,10 +155,16 @@ class PropertyVsFundInvestmentModel(BaseModel):
                     the payment of rent versus interest, on a monthly basis, 
                     for different scenarios.
                     """,
+                "title": "Month",
+                "vars": [
+                    "paymentMonth",
+                    "interestMonth",
+                    "rentMonth",
+                    "fundChangeMonth",
+                ],
             },
 
             {
-                "title": "Fund", "vars": ["paid", "fund", "totalRent", "fundProfit"],
                 "markdown": """
 
                     ### Investment Fund and Renting
@@ -180,7 +178,7 @@ class PropertyVsFundInvestmentModel(BaseModel):
                     
                     ```math
                     \\frac{d}{dt}(rent) = inflationRate \\times rent
-                    ``
+                    ```
                     
                     ```math
                     \\frac{d}{dt}(totalRent) = rent
@@ -194,5 +192,7 @@ class PropertyVsFundInvestmentModel(BaseModel):
                     ```
 
                     """,
+                "title": "Fund",
+                "vars": ["paid", "fund", "totalRent", "fundProfit"],
             },
         ]

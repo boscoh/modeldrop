@@ -15,7 +15,7 @@ class GoodwinBusinessCycleModel(BaseModel):
         self.param.dt = 0.1
 
         wageSqFn = make_sq_fn(0.000_064_1, 1, 1, 0.040_064_1)
-        self.fns.wageChange = make_cutoff_fn(wageSqFn, 0.9999)
+        self.fns.wageChangeFn = make_cutoff_fn(wageSqFn, 0.9999)
 
         self.setup_ui()
 
@@ -41,7 +41,7 @@ class GoodwinBusinessCycleModel(BaseModel):
             - self.param.depreciation
             - self.param.productivityRate
         )
-        self.dvar.wage = self.fns.wageChange(self.aux_var.laborFraction) * self.var.wage
+        self.dvar.wage = self.fns.wageChangeFn(self.aux_var.laborFraction) * self.var.wage
         self.dvar.productivity = self.param.productivityRate * self.var.productivity
         self.dvar.population = self.param.birthRate * self.var.population
 
@@ -55,8 +55,87 @@ class GoodwinBusinessCycleModel(BaseModel):
         ]
 
         self.plots = [
-            {"title": "Share", "vars": ["wageShare", "profitShare"]},
-            {"title": "Output", "vars": ["output", "wages"]},
-            {"title": "People", "vars": ["population", "labor"]},
-            {"fn": "wageChange", "xlims": [0.8, 0.9999]},
+            {
+                "markdown": """
+                    The Goodwin Business Cycle is one of the earliest descriptions
+                    of a fully dynamical model of the economy, which was first
+                    [implemented numerically][1] by Steve Keen.
+                      
+                    [1]:(https://keenomics.s3.amazonaws.com/debtdeflation_media/papers/PaperPrePublicationProof.pdf)
+                    
+                    The model assumes two actors in the economy:
+                    
+                    1. workers get paid for labor
+                    2. capitalists employ workers with capital
+                    
+                    Skipping ahead, the model generates the evolution of the relative incomes
+                    of labor (wages), capital (profit), based purely
+                    on self-interacting dynamics.
+                    """,
+                "title": "Share",
+                "vars": ["wageShare", "profitShare"],
+            },
+            {
+                "markdown": """
+                    The relationship between labor and capital are determined
+                    by these equations, which restate standard macro relationships 
+                    
+                    ```math
+                    output = labor \\times productivity
+                    ```
+                    ```math
+                    capital = output \\times capitalAccelerator
+                    ```
+                    ```math
+                    \\frac{d}{dt}(capital) = investment - depreciationRate \\times capital
+                    ```
+                    
+                    ```math
+                    wages = labor \\times wage
+                    ```
+                    
+                    Productivity is assumed to increase steadily due to innovations in
+                    technology:
+                    
+                    ```math
+                    \\frac{d}{dt}(productivity) = productivity \\times productivityGrowthRate
+                    ```
+                    
+                    Capitalists are assume to reinvest all their profits
+                    back into the businesses.
+                    
+                    Labor depends on how much capital is in the system. 
+                    Changes in capital depends on profitability, which in turn 
+                    depends on wages, leading to the cycle.
+                    """,
+                "title": "Output",
+                "vars": ["output", "wages"],
+            },
+            {
+                "markdown": """
+                    The workers are modeled as a typical population, which grows exponentially:
+                    
+                    ```math
+                    \\frac{d}{dt}(population) = population \\times populationGrowthRate
+                    ```
+                    """,
+                "title": "People",
+                "vars": ["population", "labor"],
+            },
+            {
+                "markdown": """
+                    Finally, workers can demand wage increases as it gets to
+                    full employment which
+                    will reduce the profit of the capitalist. This
+                    is modeled by the Keen wage change function that responds to
+                    the labor fraction:
+                    
+                    ```math
+                    \\frac{d}{dt}(wage) = wage \\times wageChangeFn \\left[ laborFraction \\right]
+                    ```
+                    """,
+                "fn": "wageChangeFn",
+                "xlims": [0.8, 0.995],
+                "var": "laborFraction",
+            },
         ]

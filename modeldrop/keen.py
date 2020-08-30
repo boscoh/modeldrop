@@ -59,6 +59,7 @@ class KeenDynamicEconomyModel(BaseModel):
         )
 
         self.aux_var.investDelta = self.fns.investFn(self.aux_var.profitRate)
+        self.aux_var.investment = self.aux_var.investDelta * self.var.output
         self.aux_var.realGrowthRate = (
             self.aux_var.investDelta / self.param.capitalAccelerator
             - self.param.depreciationRate
@@ -68,7 +69,6 @@ class KeenDynamicEconomyModel(BaseModel):
         self.aux_var.bank = self.aux_var.bankShare * self.var.output
         self.aux_var.profit = self.aux_var.profitShare * self.var.output
 
-        self.aux_var.investment = self.aux_var.investDelta * self.var.output
         self.aux_var.borrow = self.aux_var.investment - self.aux_var.profit
 
     def calc_dvars(self, t):
@@ -112,30 +112,24 @@ class KeenDynamicEconomyModel(BaseModel):
         ]
         self.plots = [
             {
-                "title": "Share",
-                "vars": ["bankShare", "wageShare", "profitShare"],
-                "ymin_cutoff": -0.5,
-                "ymax_cutoff": 1.5,
                 "markdown": """
-                    The Keen-Minksy model, developed by [Steve Keen](https://keenomics.s3.amazonaws.com/debtdeflation_media/papers/PaperPrePublicationProof.pdf), 
-                    models the economy by converting basic macroeconomic identities into a set of
-                    coupled differential equations.
+                
+                    The Keen-Minksy model, developed by [Steve Keen]( 
+                    https://keenomics.s3.amazonaws.com/debtdeflation_media 
+                    /papers/PaperPrePublicationProof.pdf), provides a model 
+                    of the economy that has the 
+                    attractive feature of generating both stable business 
+                    cycles and catastrophic crashes.
+                                        
+                    The economy has three sectors:
                     
-                    It uses the economic arguments of the Goodwin Business cycle and
-                     the Minsky financial instability hypothesis to generate analytic forms that 
-                     model the action of capitalists and bankers.
+                    1. labor takes wages from capital to generate output
+                    2. capital borrows money for investment and pays for labor to generate output
+                    3. bank lends money to capital and takes interest for income
                     
-                    This is a powerful model that uses very clear and well-founded assumptions
-                    to demonstrate how economies fall into natural business cycles, and
-                    how economies can collapse from runaway debt.
-                    
-                    The source code to this implementation of the model can be found [here](https://github.com/boscoh/popjs/blob/master/src/modules/econ-models.js).
-                    
-                    ### The Actors in the Economy
-                    
-                    In this model, there are three actors - labor, capital and bank, and all
-                    three affect the output of the total economy. The relationship 
-                    between output, labor and capital are intertwined by these standard macro relationships 
+                    The starting point of the model are these equations 
+                    between labor and capital, which are dynamical 
+                    restatements of standard macroeconomic relationships 
                     
                     ```math
                     output = labor \\times productivity
@@ -147,127 +141,139 @@ class KeenDynamicEconomyModel(BaseModel):
                     \\frac{d}{dt}(capital) = investment - depreciationRate \\times capital
                     ```
                     
-                    However further equations are needed to represent how investment relates to
-                    the banking sector. 
-                    
-                    Skipping ahead, the model generates the evolution of the incomes
-                     of labor (wages), capital (profit) and interest (bank), based purely
-                     on endogenous self-interacting dynamics.
+                    Productivity is assumed to increase steadily due to innovations in
+                    technology:
 
-                    To see the dynamics between the actors, it is easier to compare
-                    the relative income, where population growth has been normalized. It
-                    is a key feature of the model that potentially, the banking sector
-                    will overwhelm the entire economy and drive down wages and profit.
+                    ```math
+                    \\frac{d}{dt}(productivity) = productivity \\times productivityGrowthRate
+                    ```
+
+                    The model generates the evolution of the relative incomes 
+                    of labor (wage share), capital (profit share) and bank 
+                    (bank share), based purely on self-interacting 
+                    dynamics: 
+
                     """,
+                "title": "Share",
+                "vars": ["wageShare", "profitShare", "bankShare"],
+                "ymin_cutoff": -0.5,
+                "ymax_cutoff": 1.5,
             },
             {
+                "markdown": """
+
+                    ### The Workers
+
+                    In our model, we have a typical population:
+
+                    ```math
+                    \\frac{d}{dt}(population) = population \\times populationGrowthRate
+                    ```
+
+                    The population grows exponentially, but labor fluctuates with the typical 
+                    business cycle. 
+                    
+                    """,
                 "title": "People",
                 "vars": ["population", "labor"],
-                "markdown": """
-                    It is precisely the difficulty of thinking through this coupling
-                    between labor, capital and bank that we need to build a set of dynamic 
-                    equations to clarify their interactions.
-                    
-                    In the resultant model, the population grows exponentially, but labor fluctuates with
-                    the typical business cycle.
-                    """,
             },
             {
-                "title": "Output",
-                "vars": ["output", "wages", "debt", "profit", "bank"],
                 "markdown": """
-                    ### The Bank
-                    
-                    Once we can model capitalists' propensity to borrow, we have a model
-                    of the banking sector, and thus it's impact on the economy.
-                    
+                    The number of employed workers - labor - depends on the other two actors
+                    in the economy. Labor
+                    depends on how much capital is in the system, and changes in capital 
+                    depends on profitability, which in turn depends on wages:
+
                     ```math
-                    \\frac{d}{dt}(debt) = interestRate \\times debt + borrow
+                    wages = labor \\times wage
+                    ```
+
+                    We must explicitly introduce a model of how wage changes:
+
+                    ```math
+                    \\frac{d}{dt}(wage) = wage \\times wageFn \\left[ \\frac{labor}{population} \\right]
+                    ```
+
+                    We use the Keen Wage Function that models the upward pressure on
+                    the wage as the employment fraction approaches 1.
+                    """,
+                "fn": "wageFn",
+                "xlims": [0, 1.1],
+                "var": "laborFraction",
+            },
+            {
+                "markdown": """
+                    ### The Profit Drive of Capital
+
+                    The behaviour of capitalists is modeled as a reaction to profitability.
+                    The profitability is defined by the profit rate:
+
+                    ```math
+                    profit = output - wages - interest
+                    ```
+
+                    ```math
+                    profitRate = \\frac{profit}{capital}
                     ```
                     
-                    This model assumes (unlike neoclassical models) that banks 
-                    create new money and new debt, upon making a loan. This is the official position 
-                    taken by the [Bank of England](https://www.bankofengland.co.uk/-/media/boe/files/quarterly-bulletin/2014/money-creation-in-the-modern-economy.pdf?la=en&hash=9A8788FD44A62D8BB927123544205CE476E01654), and
-                    other central banks.
-                      
-                    The income of the bank is thus the interest generated from the debt:
+                    And the amount that the capitalists would like to borrow is 
+                    determined by the invest function, which models the psychological
+                    behavior of capitalists.
+
+                    ```math
+                    borrow = investFn(profitRate) \\times output - profit
+                    ```
+                    
+                    Minsky argued that in general a capitalist will want to 
+                    invest more when the profit rate is positive, and attempt
+                    to divest if the situation is unprofitable (profit rate < 0).
+                    This can be expressed through the Keen Investment Function:
+                                         
+                    """,
+                "fn": "investFn",
+                "xlims": [-0.5, 0.5],
+                "var": "profitRate",
+            },
+            {
+                "markdown": """
+                    ### The Bank, their debt and the Economy                      
+                                        
+                    The bank's role is to create debt to lend to capitalists. 
+                    This assumes (unlike neoclassical models) that banks 
+                    create new money and new debt, upon making a loan. 
+                    This is the official position 
+                    taken by central banks such as the [Bank of England](https://www.bankofengland.co.uk/-/media/boe/files/quarterly-bulletin/2014/money-creation-in-the-modern-economy.pdf?la=en&hash=9A8788FD44A62D8BB927123544205CE476E01654).
+                    
+                    The income of the bank is thus the interest generated from the debt,
+                    paid by the capitalist:
                     
                     ```math
                     interest = interestRate \\times debt
                     ```
+
+                    Combining the money borrowed, and the interest payments, we
+                    obtain the equation for the debt generated by the banking sector:
                     
-                    When combined with all the equations above, this finally results 
-                    in this neat analytic form of the output changes:
+                    ```math
+                    \\frac{d}{dt}(debt) = interestRate \\times debt + borrow
+                    ```
+                    When combined with all the equations above, this results 
+                    in this equation of the total output of the economy:
                     
                     ```math
                     \\frac{d}{dt}(output) = output \\times \\left( \\frac{investmentFn\\left[profitRate\\right]}{capitalAccelerator} - depreciationRate \\right)
                     ```
                     
-                    We can now see that the business cycle oscillates, but accumulates
-                    debt, until the debt runs away and overwhelms the system with
-                    interest payments.
+                    We can now plot all the major components to the output, 
+                    and compare it to the bank debt. We can now see that the 
+                    business cycle oscillates, but accumulates debt, 
+                    until the debt runs away and overwhelms the system with 
+                    interest payments. The breakdown point is when the profit 
+                    of the capitalists is driven below zero due to the 
+                    banking sector. 
+                    
                     """,
-            },
-            {
-                "fn": "wageFn",
-                "xlims": [0, 1.1],
-                "var": "laborFraction",
-                "markdown": """
-                    ### The Workers
-                    
-                    In our model, we have a typical population:
-                    
-                    ```math
-                    \\frac{d}{dt}(population) = population \\times populationGrowthRate
-                    ```
-                    
-                    Productivity is assumed to increase steadily due to innovations in
-                    technology:
-                    
-                    ```math
-                    \\frac{d}{dt}(productivity) = productivity \\times productivityGrowthRate
-                    ```
-                    
-                    The number of employed workers - labor - depends on the other two actors
-                    in the economy. Labor
-                    depends on how much capital is in the system, and changes in capital 
-                    depends on profitability, which in turn depends on wages:
-                    
-                    ```math
-                    wages = labor \\times wage
-                    ```
-                    
-                    We must explicitly introduce a model of how wage changes:
-                    
-                    ```math
-                    \\frac{d}{dt}(wage) = wage \\times wageFn \\left[ \\frac{labor}{population} \\right]
-                    ```
-                    
-                    We use the Keen Wage Function that models the upward pressure on
-                    the wage as the employment fraction approaches 1.
-                    """,
-            },
-            {
-                "fn": "investFn",
-                "xlims": [-0.5, 0.5],
-                "var": "profitRate",
-                "markdown": """
-                    ### The Profit Drive of Capital
-                    
-                    The behaviour of capitalists is modeled as a reaction to profitability.
-                    
-                    ```math
-                    profit = output - wages - interest
-                    ```
-                    
-                    ```math
-                    profitRate = \\frac{profit}{capital}
-                    ```
-                    
-                    Based on the Minsky Hypothesis, a capitalist will want to invest
-                     more when the profitability is positive. This can be expressed
-                     through the Keen Investment Function that determines the desired
-                     investment as a function of profitability:
-                                         """,
+                "title": "Output",
+                "vars": [ "wages", "profit", "bank", "debt", "output",],
             },
         ]

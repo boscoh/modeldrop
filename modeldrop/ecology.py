@@ -13,7 +13,7 @@ class LoktaVolterraEcologyModel(BaseModel):
         self.param.dt = 0.2
         self.param.initialPrey = 10
         self.param.initialPredator = 5
-        self.param.preyGrowthRate = 0.2
+        self.param.preyBirthRate = 0.2
         self.param.predationRate = 0.1
         self.param.digestionRate = 0.1
         self.param.predatorDeathRate = 0.2
@@ -25,7 +25,7 @@ class LoktaVolterraEcologyModel(BaseModel):
 
     def calc_dvars(self, t):
         self.dvar.prey = (
-            self.var.prey * self.param.preyGrowthRate
+            self.var.prey * self.param.preyBirthRate
             - self.param.predationRate * self.var.prey * self.var.predator
         )
         self.dvar.predator = (
@@ -36,30 +36,26 @@ class LoktaVolterraEcologyModel(BaseModel):
     def setup_plots(self):
         self.plots = [
             {
-                "title": "ecology",
                 "markdown": """
-                    The first complex population model (1925), uses these sets of coupled equation to
-                    reproduce the periodic rise and fall of populations in the wild. These
-                    equations are also used in studying auto-catalytic chemical reactions.
+                    The first successful population model (1925) was able to reproduce 
+                    the oscillating populatons of a predator-prey ecology over time.
                     
-                    The Lokta-Volterra equations follow two populations, a prey population with an endogenous
-                    growth function where the prey presumably takes in nutrients from an abundant
-                    environment, but will also die from the predator attack it, as represented
-                    by the predation rate.
+                    The change in the prey population depends on the intrinsic prey birth rate and
+                    the predation rate at which the prey is caught and eaten by the predator:
                      
                     ```math
-                    \\frac{d}{dt}(prey) = preyGrowthRate \\times prey  - predationRate \\times prey \\times predator
+                    \\frac{d}{dt}(prey) = preyBirthRate \\times prey  - predationRate \\times prey \\times predator
                     ``` 
                     
-                    In contrast, the predator relies totally on the prey as its food source, which
-                     is represented by the digestion rate, which determines how many prey a predator
-                     has to eat before it can produce a new predator. Finally, we need to include
-                     an explicit death rate for the predator:
+                    The predator's growth rate depends on the digestion rate - how well the predator
+                    can digest the prey and grow a new predator. As well the predator will
+                    die by natural attrition through the predator death rate:
                     
                     ```math
                     \\frac{d}{dt}(predator) = digestionRate \\times prey \\times predator - predatorDeathRate \\times predator
                     ```
                     """,
+                "title": "ecology",
                 "vars": ["predator", "prey"],
             },
         ]
@@ -67,7 +63,7 @@ class LoktaVolterraEcologyModel(BaseModel):
             {"key": "time", "max": 300},
             {"key": "initialPrey", "max": 20,},
             {"key": "initialPredator", "max": 20,},
-            {"key": "preyGrowthRate", "max": 2,},
+            {"key": "preyBirthRate", "max": 2,},
             {"key": "predationRate", "max": 2,},
             {"key": "predatorDeathRate", "max": 2,},
             {"key": "digestionRate", "max": 2,},

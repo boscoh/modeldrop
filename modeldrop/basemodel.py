@@ -179,7 +179,7 @@ class BaseModel:
         for plot in self.plots:
             if "title" in plot:
                 graph = self.make_output_graph(
-                    "plot-" + plot["key"], plot["key"], plot["vars"]
+                    "plot-" + plot["title"], plot["key"], plot["vars"]
                 )
                 result.append(graph)
             elif "fn" in plot:
