@@ -104,12 +104,12 @@ class BaseModel:
 
         if len(self.aux_var_flows):
             for (from_key, to_key, aux_var_key) in self.aux_var_flows:
-                val = self.aux_var[aux_var_key] * self.var[from_key]
+                val = self.aux_var[aux_var_key]
                 flows.append([from_key, to_key, val])
 
         if len(self.param_flows):
             for (from_key, to_key, param_key) in self.param_flows:
-                val = self.param[param_key] * self.var[from_key]
+                val = self.param[param_key]
                 flows.append([from_key, to_key, val])
 
         if len(flows):

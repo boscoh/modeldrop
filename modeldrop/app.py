@@ -141,7 +141,7 @@ def make_title(key):
     """https://stackoverflow.com/a/1176023"""
     s1 = re.sub("(.)([A-Z][a-z]+)", r"\1 \2", key)
     s2 = re.sub("([a-z0-9])([A-Z])", r"\1 \2", s1)
-    s3 = s2.replace('_', ' ')
+    s3 = s2.replace("_", " ")
     return s3.lower().title()
 
 
@@ -178,7 +178,7 @@ class DashModelAdaptor(dict):
             __name__, external_stylesheets=[dbc.themes.BOOTSTRAP], server=self.server
         )
 
-        self.app.title = 'modeldrop'
+        self.app.title = "modeldrop"
 
         self.app.layout = self.make_layout()
 
@@ -282,7 +282,7 @@ class DashModelAdaptor(dict):
                         step=step,
                         marks=mark_dict,
                         value=value,
-                        persistence_type='local',
+                        persistence_type="local",
                     ),
                     style={
                         "marginLeft": "15px",
@@ -327,15 +327,17 @@ class DashModelAdaptor(dict):
         for plot in self.model.plots:
             graph = dcc.Graph(
                 id=plot["id"],
-                config={"responsive": True,
-                        "displaylogo": False,
-                        "modeBarButtonsToRemove": [
-                            "lasso2d",
-                            "hoverClosestCartesian",
-                            "hoverCompareCartesian",
-                            "toggleSpikelines",
-                            "resetScale2d"
-                        ]},
+                config={
+                    "responsive": True,
+                    "displaylogo": False,
+                    "modeBarButtonsToRemove": [
+                        "lasso2d",
+                        "hoverClosestCartesian",
+                        "hoverCompareCartesian",
+                        "toggleSpikelines",
+                        "resetScale2d",
+                    ],
+                },
                 style={"height": "405px"},
                 animate=True,
                 animation_options={
@@ -351,7 +353,12 @@ class DashModelAdaptor(dict):
 
         result.append(
             html.Div(
-                children, style={"height": "calc(100vh - 80px", "padding-right": "30px", "overflow": "scroll"}
+                children,
+                style={
+                    "height": "calc(100vh - 80px",
+                    "padding-right": "30px",
+                    "overflow": "scroll",
+                },
             )
         )
         return result
