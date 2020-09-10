@@ -13,13 +13,13 @@ class TurchinEliteDemographicModel(BaseModel):
         self.param.maxProductionRate = 2
         self.param.producerBirth = 0.02
         self.param.producerDeath = 0.02
-        self.param.initProdDecline = 0.5
         self.param.eliteBirth = 0.05
-        self.param.eliteAtHalfExtraction = 0.3
         self.param.maxEliteDeath = 0.12
+        self.param.eliteAtHalfExtraction = 0.3
         self.param.stateAtHalfPeace = 0.3
         self.param.stateAtHalfCarry = 0.07
-        self.param.finalStateprodDecline = 0.2
+        self.param.initProdDecline = 0.5
+        self.param.finalStateProdDecline = 0.2
         self.param.stateTaxRate = 1
         self.param.stateEmploymentRate = 0.01
 
@@ -36,7 +36,7 @@ class TurchinEliteDemographicModel(BaseModel):
 
         self.fns.prodDeclineFn = make_approach_fn(
             self.param.initProdDecline,
-            self.param.finalStateprodDecline,
+            self.param.finalStateProdDecline,
             self.param.stateAtHalfCarry,
         )
 
@@ -188,7 +188,11 @@ class TurchinEliteDemographicModel(BaseModel):
                     as the producer population nears the carrying capacity. 
                     
                     """,
-                "fn": "prodDeclineFn", "xlims": [0, 1], "ymin": 0, "var": "state"},
+                "fn": "prodDeclineFn",
+                "xlims": [0, 1],
+                "ymin": 0,
+                "var": "state",
+            },
             {
                 "markdown": """
 

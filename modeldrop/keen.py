@@ -9,7 +9,7 @@ class KeenDynamicEconomyModel(BaseModel):
         self.param.dt = 0.1
 
         self.param.birthRate = 0.01
-        self.param.capitalAccelerator = 3
+        self.param.outputAccelerator = 3
         self.param.depreciationRate = 0.06
         self.param.productivityRate = 0.02
 
@@ -49,19 +49,19 @@ class KeenDynamicEconomyModel(BaseModel):
         self.aux_var.laborWages = self.var.wage * self.aux_var.labor
         self.aux_var.wages = self.var.wage * self.aux_var.labor
 
-        self.aux_var.capital = self.var.output * self.param.capitalAccelerator
+        self.aux_var.capital = self.var.output * self.param.outputAccelerator
 
         self.aux_var.bankShare = self.param.interestRate * self.var.debtRatio
         self.aux_var.profitShare = 1 - self.var.wageShare - self.aux_var.bankShare
 
         self.aux_var.profitRate = (
-            self.aux_var.profitShare / self.param.capitalAccelerator
+            self.aux_var.profitShare / self.param.outputAccelerator
         )
 
         self.aux_var.investDelta = self.fns.investFn(self.aux_var.profitRate)
         self.aux_var.investment = self.aux_var.investDelta * self.var.output
         self.aux_var.realGrowthRate = (
-            self.aux_var.investDelta / self.param.capitalAccelerator
+            self.aux_var.investDelta / self.param.outputAccelerator
             - self.param.depreciationRate
         )
 
@@ -100,15 +100,15 @@ class KeenDynamicEconomyModel(BaseModel):
         self.editable_params = [
             {"key": "time", "max": 500,},
             {"key": "birthRate", "max": 0.1,},
-            {"key": "capitalAccelerator", "max": 5,},
-            {"key": "depreciationRate", "max": 0.1,},
             {"key": "productivityRate", "max": 0.1,},
-            {"key": "initialLaborFraction", "max": 1.0,},
+            {"key": "outputAccelerator", "max": 5,},
+            {"key": "depreciationRate", "max": 0.1,},
             {"key": "interestRate", "max": 0.2,},
             {"key": "wageSlope", "max": 30, "min": -30},
             {"key": "wageXOrigin", "max": 1, "min": -1},
             {"key": "investSlope", "max": 30, "min": -30},
             {"key": "investXOrigin", "max": 0.5, "min": -0.5},
+            {"key": "initialLaborFraction", "max": 1.0, },
         ]
         self.plots = [
             {
@@ -135,7 +135,7 @@ class KeenDynamicEconomyModel(BaseModel):
                     output = labor \\times productivity
                     ```
                     ```math
-                    capital = output \\times capitalAccelerator
+                    capital = output \\times outputAccelerator
                     ```
                     ```math
                     \\frac{d}{dt}(capital) = investment - depreciationRate \\times capital
@@ -261,7 +261,7 @@ class KeenDynamicEconomyModel(BaseModel):
                     in this equation of the total output of the economy:
                     
                     ```math
-                    \\frac{d}{dt}(output) = output \\times \\left( \\frac{investmentFn\\left[profitRate\\right]}{capitalAccelerator} - depreciationRate \\right)
+                    \\frac{d}{dt}(output) = output \\times \\left( \\frac{investmentFn\\left[profitRate\\right]}{outputAccelerator} - depreciationRate \\right)
                     ```
                     
                     We can now plot all the major components to the output, 
@@ -274,6 +274,6 @@ class KeenDynamicEconomyModel(BaseModel):
                     
                     """,
                 "title": "Output",
-                "vars": [ "wages", "profit", "bank", "debt", "output",],
+                "vars": ["wages", "profit", "bank", "debt", "output",],
             },
         ]

@@ -53,7 +53,13 @@ class FundamentalPopulationModel(BaseModel):
                      equation:
                      
                      ```math
-                     \\frac{d}{dt}(population) = growthRate \\times population \\left[1 - \\frac{population}{carryingCapacity} \\right]
+                     \\frac{d}{dt}(population) = 
+                        growthRate 
+                            \\times 
+                                \\left[
+                                    1 - \\frac{population}{carryingCapacity} 
+                                \\right] 
+                            \\times population
                      ``` 
 
                      """,

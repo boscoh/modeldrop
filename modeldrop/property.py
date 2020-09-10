@@ -163,7 +163,6 @@ class PropertyVsFundInvestmentModel(BaseModel):
                     "fundChangeMonth",
                 ],
             },
-
             {
                 "markdown": """
 

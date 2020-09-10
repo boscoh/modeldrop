@@ -41,7 +41,9 @@ class GoodwinBusinessCycleModel(BaseModel):
             - self.param.depreciation
             - self.param.productivityRate
         )
-        self.dvar.wage = self.fns.wageChangeFn(self.aux_var.laborFraction) * self.var.wage
+        self.dvar.wage = (
+            self.fns.wageChangeFn(self.aux_var.laborFraction) * self.var.wage
+        )
         self.dvar.productivity = self.param.productivityRate * self.var.productivity
         self.dvar.population = self.param.birthRate * self.var.population
 
@@ -84,7 +86,7 @@ class GoodwinBusinessCycleModel(BaseModel):
                     output = labor \\times productivity
                     ```
                     ```math
-                    capital = output \\times capitalAccelerator
+                    capital = output \\times outputAccelerator
                     ```
                     ```math
                     \\frac{d}{dt}(capital) = investment - depreciationRate \\times capital

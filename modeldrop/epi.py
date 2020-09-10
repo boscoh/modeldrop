@@ -28,16 +28,24 @@ class StandardThreePartEpidemiologyModel(BaseModel):
 
     def calc_aux_vars(self):
         self.aux_var.population = sum(self.var.values())
+
         self.aux_var.rateForce = (
             self.param.contactRate / self.aux_var.population
         ) * self.var.infectious
+
+        self.aux_var.infectFlow = self.aux_var.rateForce * self.var.susceptible
+
+        self.aux_var.recoverFlow = self.param.recoverRate * self.var.infectious
+
         self.aux_var.rn = (
             self.var.susceptible / self.aux_var.population
         ) * self.param.reproductionNumber
 
     def setup_flows(self):
-        self.aux_var_flows = [["susceptible", "infectious", "rateForce"]]
-        self.param_flows = [["infectious", "recovered", "recoverRate"]]
+        self.aux_var_flows = [
+            ["susceptible", "infectious", "infectFlow"],
+            ["infectious", "recovered", "recoverFlow"]
+        ]
 
     def calc_dvars(self, t):
         for key in self.var.keys():
@@ -52,7 +60,8 @@ class StandardThreePartEpidemiologyModel(BaseModel):
                 "markdown": """
                     The SIR model is the most basic epidemiological model of 
                     a transmissible disease. It consists of 3 populations (called
-                    compartments): 
+                    compartments) and the name SIR comes from the first letter
+                    of these populations: 
                     
                     - Susceptible people don't have the disease,
                     - Infectious people have caught the disease and can transmit it,  
@@ -96,5 +105,3 @@ class StandardThreePartEpidemiologyModel(BaseModel):
             {"key": "initialPrevalence", "max": 100000},
             {"key": "initialPopulation", "max": 100000},
         ]
-
-

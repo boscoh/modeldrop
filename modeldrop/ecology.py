@@ -12,7 +12,7 @@ class LoktaVolterraEcologyModel(BaseModel):
         self.param.time = 200
         self.param.dt = 0.2
         self.param.initialPrey = 10
-        self.param.initialPredator = 5
+        self.param.initialPredator = 1
         self.param.preyBirthRate = 0.2
         self.param.predationRate = 0.1
         self.param.digestionRate = 0.1
@@ -37,23 +37,32 @@ class LoktaVolterraEcologyModel(BaseModel):
         self.plots = [
             {
                 "markdown": """
-                    The first successful population model (1925) was able to reproduce 
-                    the oscillating populatons of a predator-prey ecology over time.
+                
+                    The first successful population model (1925) was able to 
+                    reproduce the oscillating populatons of a predator-prey 
+                    ecology over time. 
                     
-                    The change in the prey population depends on the intrinsic prey birth rate and
-                    the predation rate at which the prey is caught and eaten by the predator:
+                    The change in the prey population depends on the 
+                    intrinsic prey birth rate and the predation rate at which 
+                    the prey is caught and eaten by the predator: 
                      
                     ```math
-                    \\frac{d}{dt}(prey) = preyBirthRate \\times prey  - predationRate \\times prey \\times predator
+                    \\frac{d}{dt}(prey) = 
+                        preyBirthRate \\times prey 
+                         - predationRate \\times prey \\times predator
                     ``` 
                     
-                    The predator's growth rate depends on the digestion rate - how well the predator
-                    can digest the prey and grow a new predator. As well the predator will
-                    die by natural attrition through the predator death rate:
+                    The predator's growth rate depends on the digestion rate 
+                    - how well the predator can digest the prey and grow a 
+                    new predator. As well the predator will die by natural 
+                    attrition through the predator death rate: 
                     
                     ```math
-                    \\frac{d}{dt}(predator) = digestionRate \\times prey \\times predator - predatorDeathRate \\times predator
+                    \\frac{d}{dt}(predator) = 
+                        - predatorDeathRate \\times predator
+                        digestionRate \\times prey \\times predator 
                     ```
+
                     """,
                 "title": "ecology",
                 "vars": ["predator", "prey"],
