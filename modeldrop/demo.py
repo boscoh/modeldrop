@@ -27,7 +27,7 @@ class TurchinEliteDemographicModel(BaseModel):
         self.param.initElite = 0.02
         self.param.initState = 0.0
 
-        self.setup_plots()
+        self.setup_ui()
 
     def init_vars(self):
         self.var.producer = self.param.initProducer
@@ -93,7 +93,7 @@ class TurchinEliteDemographicModel(BaseModel):
         if self.dvar.state + self.var.state < 0:
             self.dvar.state = -self.var.state
 
-    def setup_plots(self):
+    def setup_ui(self):
         self.plots = [
             {
                 "markdown": """
