@@ -184,38 +184,6 @@ class DashModelAdaptor(dict):
 
         self.register_callbacks(self.app)
 
-    def make_model_slider_callback(self, model: BaseModel):
-        def slider_callback(*values):
-            if self.is_running:
-                logger.debug(f"change_inputs skipping as running already")
-                raise PreventUpdate
-
-            self.is_running = True
-
-            try:
-                for p, val in zip(model.editable_params, values):
-                    if p.get("is_log10"):
-                        model.param[p["key"]] = float(math.pow(10, val))
-                    else:
-                        model.param[p["key"]] = float(val)
-                logger.info(f"slider_callback run {model.param}")
-                model.run()
-                model.calc_aux_var_solutions()
-                figures = self.make_figures(model)
-            except Exception as e:
-                traceback.print_exc()
-                logger.info(f"slider_callback exception: {e}...")
-                figures = [
-                    {"data": {"x": [], "y": [], "type": "scatter"}}
-                    for i in range(len(model.plots))
-                ]
-
-            self.is_running = False
-
-            return figures
-
-        return slider_callback
-
     def choose_model(self, i):
         self.model = self.models[i]
 
@@ -271,7 +239,7 @@ class DashModelAdaptor(dict):
 
             logger.info(f"make_parameter_div key={input_key} {mark_dict}")
 
-            children.append(dbc.Label(f"{make_title(input_key)}"),)
+            children.append(dbc.Label(f"{make_title(input_key)} = {value}", id=f'{p["id"]}-value'))
 
             children.append(
                 html.Div(
@@ -282,7 +250,6 @@ class DashModelAdaptor(dict):
                         step=step,
                         marks=mark_dict,
                         value=value,
-                        persistence_type="local",
                     ),
                     style={
                         "marginLeft": "15px",
@@ -581,6 +548,40 @@ class DashModelAdaptor(dict):
             style={"overflow": "hidden"},
         )
 
+    def make_model_slider_callback(self, model: BaseModel):
+        def slider_callback(*values):
+            if self.is_running:
+                logger.debug(f"change_inputs skipping as running already")
+                raise PreventUpdate
+
+            self.is_running = True
+
+            try:
+                for p, val in zip(model.editable_params, values):
+                    if p.get("is_log10"):
+                        model.param[p["key"]] = float(math.pow(10, val))
+                    else:
+                        model.param[p["key"]] = float(val)
+                logger.info(f"slider_callback run {model.param}")
+                model.run()
+                model.calc_aux_var_solutions()
+                figures = self.make_figures(model)
+            except Exception as e:
+                traceback.print_exc()
+                logger.info(f"slider_callback exception: {e}...")
+                figures = [
+                    {"data": {"x": [], "y": [], "type": "scatter"}}
+                    for i in range(len(model.plots))
+                ]
+
+            self.is_running = False
+            titles = [make_title(p["key"]) for p in model.editable_params]
+            values = [model.param[p["key"]] for p in model.editable_params]
+            outputs = [f"{t} = {v}" for t, v in zip(titles, values)]
+            return figures + outputs
+
+        return slider_callback
+
     def register_callbacks(self, app):
 
         app.config["suppress_callback_exceptions"] = True
@@ -604,7 +605,9 @@ class DashModelAdaptor(dict):
             return self.make_content_children()
 
         for model in self.models:
-            outputs = [Output(p["id"], "figure") for p in model.plots]
+            plot_outputs = [Output(p["id"], "figure") for p in model.plots]
+            value_outputs = [Output(f'{p["id"]}-value', "children") for p in model.editable_params]
+            outputs = plot_outputs + value_outputs
             inputs = [Input(p["id"], "value") for p in model.editable_params]
             app.callback(outputs, inputs)(model.slider_callback)
 

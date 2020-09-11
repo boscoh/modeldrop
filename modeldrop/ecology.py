@@ -17,7 +17,7 @@ class LoktaVolterraEcologyModel(BaseModel):
         self.param.predationRate = 0.1
         self.param.digestionRate = 0.1
         self.param.predatorDeathRate = 0.2
-        self.setup_plots()
+        self.setup_ui()
 
     def init_vars(self):
         self.var.predator = self.param.initialPredator
@@ -33,7 +33,7 @@ class LoktaVolterraEcologyModel(BaseModel):
             - self.var.predator * self.param.predatorDeathRate
         )
 
-    def setup_plots(self):
+    def setup_ui(self):
         self.plots = [
             {
                 "markdown": """
