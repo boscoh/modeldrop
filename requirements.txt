@@ -1,12 +1,8 @@
 numpy
-pandas
 scipy
-scikit_learn
 matplotlib
-arrow
 Flask==1.1.1
 Pillow==6.2.1
-typing==3.7.4.1
 dash_bootstrap_components==0.7.2
 dash_html_components==1.0.1
 dash_core_components==1.5.0
