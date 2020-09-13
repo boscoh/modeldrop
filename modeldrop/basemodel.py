@@ -144,51 +144,6 @@ class BaseModel:
                     self.solution[key] = []
                 self.solution[key].append(value)
 
-    def make_output_graph(self, basename, title, keys):
-        graph = {"basename": basename, "is_legend": True, "datasets": []}
-        for key in keys:
-            dataset = {
-                "graph_type": "line",
-                "xvals": self.times,
-                "yvals": self.solution[key],
-                "label": key,
-            }
-            graph["datasets"].append(dataset)
-        return graph
-
-    def make_fn_graph(self, basename, fn, xlims):
-        graph = {"basename": basename, "is_legend": True, "datasets": []}
-
-        def add_dataset(fn, x_vals):
-            dataset = {
-                "graph_type": "line",
-                "xvals": x_vals,
-                "yvals": [self.fn[fn](x) for x in x_vals],
-                "label": fn,
-            }
-            graph["datasets"].append(dataset)
-
-        d = (xlims[1] - xlims[0]) / 100.0
-        add_dataset(fn, list(float_range(xlims[0], xlims[1], d)))
-        return graph
-
-    def make_graphs(self):
-        self.run()
-        self.calc_aux_var_solutions()
-        result = []
-        for plot in self.plots:
-            if "title" in plot:
-                graph = self.make_output_graph(
-                    "plot-" + plot["title"], plot["key"], plot["vars"]
-                )
-                result.append(graph)
-            elif "fn" in plot:
-                graph = self.make_fn_graph(
-                    "plot-" + plot["fn"], plot["fn"], plot["xlims"]
-                )
-            result.append(graph)
-        return result
-
     def check_consistency(self):
         self.init_vars()
         self.calc_aux_vars()

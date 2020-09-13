@@ -156,39 +156,26 @@ import datetime
 import json
 import logging
 import os
-from typing import Any, Dict, List, Optional
-
-import arrow
-import matplotlib
 import numpy
-import pandas
+
+import matplotlib
 from matplotlib import pyplot as plt
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 from matplotlib.dates import date2num
 from matplotlib.figure import Figure
-from pandas.plotting import register_matplotlib_converters
+
 from PIL import Image
-from sklearn.linear_model import LinearRegression
+
+from modeldrop.basemodel import float_range
 
 logger = logging.getLogger(__name__)
 
 count_color = (0, 1, 0, 0.2)
 
 
-def number(n: Any) -> Optional[float]:
-    """
-    Converts numbers to JSON-friendly format
-    """
-    return None if pandas.isnull(n) else float(n)
-
-
-def is_date(d: Any) -> bool:
+def is_date(d) -> bool:
     """Checks if d is a date-like object"""
     if isinstance(d, datetime.datetime):
-        return True
-    if isinstance(d, arrow.Arrow):
-        return True
-    if isinstance(d, pandas.Timestamp):
         return True
     return False
 
@@ -221,7 +208,7 @@ def json_dumps(o):
     """
     Convenience dumper to JSON-string that converts datetimes to datetime strings
     """
-    return json.dumps(o, default=convert_to_datestring, indent=2)
+    return json.dumps(o, default=json_converter, indent=2)
 
 
 def ensure_dir(d):
@@ -234,30 +221,24 @@ def ensure_dir(d):
         os.makedirs(d)
 
 
-def convert_to_datestring(o):
+def json_converter(o):
     """
     Converts to ISO datestring depending on type of o
     """
-    if (
-        isinstance(o, datetime.datetime)
-        or isinstance(o, arrow.Arrow)
-        or isinstance(o, pandas.Timestamp)
-    ):
+    if isinstance(o, datetime.datetime):
         return o.isoformat()
-    if isinstance(o, pandas.DatetimeIndex):
-        return [t.isoformat() for t in o]
+    if isinstance(o, numpy.ndarray):
+        return list(o)
 
 
 def init():
-    register_matplotlib_converters()
     matplotlib.style.use("ggplot")
-    # plt.rcParams["font.family"] = '"Helvetica Neue" "Helvetica" Serif'
 
 
 init()
 
 
-def create_graph() -> Dict:
+def create_graph() -> dict:
     """
     Generates a default template for a graph, including all the essential
     fields to use in ``graphing.make_matplotlib_fig()``.
@@ -314,205 +295,6 @@ def get_default_color(i):
 def get_rgb(color):
     """Returns a 3-tuple from a color or color string"""
     return matplotlib.colors.to_rgb(color)
-
-
-def make_linear_fitted_lines(series, t0, t1, color, is_linear_fit=True):
-    """Generates a dataset that draws a line of best fit for
-    a time-series between the times [t0, t1]. The dataset
-    will also a summary dictionary that stores the parameters
-    of the fit.
-    """
-    xvals = [t0, t1]
-
-    mean = series.mean()
-    std = series.std()
-
-    y0 = float(mean)
-    y1 = float(mean)
-
-    slope = None
-    intercept = None
-
-    if is_linear_fit:
-        try:
-            model = LinearRegression()
-            times = series.index
-
-            if is_date(times[0]):
-                date_nums = date2num(times).reshape(-1, 1)
-            else:
-                date_nums = numpy.array(times).reshape(-1, 1)
-
-            model.fit(date_nums, numpy.array(series.values).reshape(-1, 1))
-
-            slope = float(model.coef_[0][0])
-            intercept = float(model.intercept_[0])
-
-            if is_date(xvals[0]):
-                predict_xvals = date2num(xvals)
-            else:
-                predict_xvals = numpy.array(xvals)
-
-            predicted_yvals = model.predict(predict_xvals.reshape(-1, 1))
-
-            [y0, y1] = [y[0] for y in predicted_yvals]
-        except:
-            logger.warning(
-                "make_linear_fitted_lines warning: failed to find linear fit"
-            )
-            pass
-
-    result = [
-        {
-            "yvals": [y0, y1],
-            "xvals": xvals,
-            "summary": {
-                "mean": number(mean),
-                "std": number(std),
-                "slope": number(slope),
-                "intercept": number(intercept),
-                "color": matplotlib.colors.to_rgb(color),
-            },
-            "color": lighten_color(color, 1.3),
-            "ls": "--",
-            "linewidth": 2,
-            "graph_type": "line",
-        },
-        {
-            "ystacks": [[y0 - std, y1 - std], [y0 + std, y1 + std]],
-            "xvals": xvals,
-            "color": lighten_color(color, 0.8, 0.2),
-            "ls": ":",
-            "graph_type": "fillbetween",
-        },
-    ]
-    return result
-
-
-def is_more_than_a_day_apart(time0, time1):
-    timedelta = time1 - time0
-    if is_date(time0):
-        return abs(timedelta.days) > 1
-    else:
-        return timedelta > 1
-
-
-def split_dataset(
-    dataset: Dict, is_discontinous_fn=is_more_than_a_day_apart
-) -> List[Dict]:
-    """Returns a list of dataset, each of which is a subset of
-    the original dataset, where the split occurs whenever there
-    is a discontinuity between x-values."""
-    result = []
-
-    def add_result(i, j):
-        sub_dataset = {}
-        for key in dataset.keys():
-            sub_dataset[key] = dataset[key][i:j]
-        result.append(sub_dataset)
-
-    i_start = 0
-    xvals = dataset["xvals"]
-    n = len(xvals)
-    for i in range(1, n):
-        if i == n - 1:
-            add_result(i_start, n)
-        elif is_discontinous_fn(xvals[i - 1], xvals[i]):
-            add_result(i_start, i)
-            i_start = i
-    return result
-
-
-def get_filled_daily_times(times):
-    """
-    Backfills a list of times so that missing days are included
-    in the list
-    """
-    if len(times) == 0:
-        return []
-    full_times = [times[0]]
-    is_date = is_date(times[0])
-    for i in range(1, len(times)):
-        if is_date:
-            days = abs((times[i - 1] - times[i]).days)
-        else:
-            days = times[i - 1] - times[i]
-        if days > 1:
-            for i_day in range(days - 1):
-                if is_date:
-                    new_time = times[i - 1] + datetime.timedelta(days=i_day)
-                else:
-                    new_time = times[i - 1] + i_day
-                full_times.append(new_time)
-        full_times.append(times[i])
-    return full_times
-
-
-def make_daily_aggregated_dataset(times, values, method="avg", min_time=None):
-    """Consolidate a time-series with multiple values at each
-    time step into a base dataset where x-vals are unique
-    times and y-vals are aggregations of all values at
-    a particular time
-    """
-    values_by_time = {}
-    for time, y in zip(times, values):
-        if pandas.isnull(time):
-            continue
-        if min_time is not None:
-            if time < min_time:
-                continue
-        if time not in values_by_time:
-            values_by_time[time] = []
-        values_by_time[time].append(y)
-
-    dataset = {}
-    dataset["xvals"] = []
-    dataset["yvals"] = []
-    dataset["counts"] = []
-    dataset["neg_stds"] = []
-    dataset["pos_stds"] = []
-    dataset["uppers"] = []
-    dataset["lowers"] = []
-    dataset["stds"] = []
-
-    times = list(sorted(values_by_time.keys()))
-
-    for time in get_filled_daily_times(times):
-        if time in values_by_time:
-            values = numpy.array(values_by_time[time])
-            count = len(values)
-            if method == "avg":
-                mean = values.mean()
-                std = values.std()
-            else:  # method == "sum":
-                mean = values.sum()
-                std = 0
-            diffs = values - mean
-            pos_diffs = diffs[diffs >= 0]
-            var = sum([d * d for d in pos_diffs])
-            pos_std = numpy.sqrt(var / len(pos_diffs)) if len(pos_diffs) else 0
-            neg_diffs = diffs[diffs <= 0]
-            var = sum([d * d for d in neg_diffs])
-            neg_std = numpy.sqrt(var / len(neg_diffs)) if len(neg_diffs) else 0
-        else:
-            count = 0
-            mean = numpy.nan
-            std = 0
-            pos_std = 0
-            neg_std = 0
-
-        dataset["xvals"].append(time)
-        dataset["yvals"].append(mean)
-        dataset["pos_stds"].append(pos_std)
-        dataset["neg_stds"].append(neg_std)
-        dataset["uppers"].append(mean + pos_std)
-        dataset["lowers"].append(mean - neg_std)
-        dataset["stds"].append(std)
-        dataset["counts"].append(count)
-
-    dataset["errors"] = [dataset["neg_stds"], dataset["pos_stds"]]
-
-    return dataset
 
 
 def make_matplotlib_figure(graph: dict, png: str) -> Figure:
@@ -854,85 +636,6 @@ def write_graph(graph, directory=".", transparent=False):
     return png
 
 
-def fill_missing_days_in_dataset(dataset):
-    """
-    Backfills a list of times so that missing days are included
-    in the list, and vals at those points are set to nan
-    """
-    if "xvals" not in dataset:
-        return
-
-    xvals = dataset["xvals"]
-
-    if len(xvals) == 0:
-        return
-
-    is_xdate = is_date(xvals[0])
-
-    is_ystacks = "ystacks" in dataset
-    if is_ystacks:
-        ystacks = dataset["ystacks"]
-        n_ystack = len(ystacks)
-    else:
-        yvals = dataset["yvals"]
-
-    full_xvals = [xvals[0]]
-    if is_ystacks:
-        full_ystacks = [[ystacks[i][0]] for i in range(n_ystack)]
-    else:
-        full_yvals = [yvals[0]]
-
-    for i in range(1, len(xvals)):
-        if is_xdate:
-            days = abs((xvals[i - 1] - xvals[i]).days)
-        else:
-            days = xvals[i - 1] - xvals[i]
-        if days > 1:
-            for i_day in range(days - 1):
-                if is_xdate:
-                    new_time = xvals[i - 1] + datetime.timedelta(days=i_day)
-                else:
-                    new_time = xvals[i - 1] + i_day
-                full_xvals.append(new_time)
-                if is_ystacks:
-                    for i_stack in range(n_ystack):
-                        full_ystacks[i_stack].append(numpy.nan)
-                else:
-                    full_yvals.append(numpy.nan)
-        full_xvals.append(xvals[i])
-        if is_ystacks:
-            for i_stack in range(n_ystack):
-                full_ystacks[i_stack].append(ystacks[i_stack][i])
-        else:
-            full_yvals.append(yvals[i])
-
-    dataset["xvals"] = full_xvals
-    if is_ystacks:
-        dataset["ystacks"] = full_ystacks
-    else:
-        dataset["yvals"] = full_yvals
-
-
-def make_ts_scatter_dataset(ts, color):
-    return {
-        "xvals": ts.index.to_list(),
-        "yvals": ts.to_list(),
-        "graph_type": "scatter",
-        "color": lighten_color(color, 0.7, opacity=0.2),
-    }
-
-
-def make_ts_line_dataset(ts, color, ls="--"):
-    return {
-        "xvals": ts.index.to_list(),
-        "yvals": ts.to_list(),
-        "linewidth": 2,
-        "graph_type": "line",
-        "ls": ls,
-        "color": lighten_color(color, 0.9),
-    }
-
-
 def make_vline(x, color):
     return {
         "x": x,
@@ -940,3 +643,46 @@ def make_vline(x, color):
         "ls": "--",
         "linewidth": 2,
     }
+
+
+def make_graphs_from_model(model, directory=".", transparent=False):
+    model.run()
+    model.calc_aux_var_solutions()
+
+    graphs = []
+    for plot in model.plots:
+
+        if "title" in plot:
+
+            basename, keys = "plot-" + plot["title"], plot["vars"]
+            graph = {"basename": basename, "is_legend": True, "datasets": []}
+            for key in keys:
+                dataset = {
+                    "graph_type": "line",
+                    "xvals": model.times,
+                    "yvals": model.solution[key],
+                    "label": key,
+                }
+                graph["datasets"].append(dataset)
+            graphs.append(graph)
+
+        elif "fn" in plot:
+
+            fn = plot["fn"]
+            basename, xlims = "plot-" + fn, plot["xlims"]
+            d = (xlims[1] - xlims[0]) / 100.0
+            x_vals = list(float_range(xlims[0], xlims[1], d))
+            graph = {"basename": basename, "is_legend": True, "datasets": []}
+            dataset = {
+                "graph_type": "line",
+                "xvals": x_vals,
+                "yvals": [model.fn[fn](x) for x in x_vals],
+                "label": fn,
+            }
+            graph["datasets"].append(dataset)
+            graphs.append(graph)
+
+    for graph in graphs:
+        write_graph(graph, directory, transparent)
+
+    return graphs
