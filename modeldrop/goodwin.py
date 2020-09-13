@@ -15,7 +15,7 @@ class GoodwinBusinessCycleModel(BaseModel):
         self.param.dt = 0.1
 
         wageSqFn = make_sq_fn(0.000_064_1, 1, 1, 0.040_064_1)
-        self.fns.wageChangeFn = make_cutoff_fn(wageSqFn, 0.9999)
+        self.fn.wageChangeFn = make_cutoff_fn(wageSqFn, 0.9999)
 
         self.setup_ui()
 
@@ -42,7 +42,7 @@ class GoodwinBusinessCycleModel(BaseModel):
             - self.param.productivityRate
         )
         self.dvar.wage = (
-            self.fns.wageChangeFn(self.aux_var.laborFraction) * self.var.wage
+            self.fn.wageChangeFn(self.aux_var.laborFraction) * self.var.wage
         )
         self.dvar.productivity = self.param.productivityRate * self.var.productivity
         self.dvar.population = self.param.birthRate * self.var.population

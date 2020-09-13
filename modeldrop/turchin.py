@@ -18,14 +18,14 @@ class TurchinDemographicStateModel(BaseModel):
         self.setup_ui()
 
     def init_vars(self):
-        self.fns.carryingCapacityFn = make_approach_fn(
+        self.fn.carryingCapacityFn = make_approach_fn(
             1, self.param.maxCarryCapacity, self.param.stateRevenueAtHalfCapacity
         )
         self.var.populationDensity = 0.2
         self.var.stateRevenue = 0
 
     def calc_aux_vars(self):
-        self.aux_var.carryingCapacity = self.fns.carryingCapacityFn(
+        self.aux_var.carryingCapacity = self.fn.carryingCapacityFn(
             self.var.stateRevenue
         )
         self.aux_var.surplus = self.param.maxSurplus * (
