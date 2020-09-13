@@ -322,7 +322,7 @@ class DashModelAdaptor(dict):
             html.Div(
                 children,
                 style={
-                    "height": "calc(100vh - 80px",
+                    "height": "calc(100vh - 80px)",
                     "padding-right": "30px",
                     "overflow": "scroll",
                 },
@@ -406,7 +406,7 @@ class DashModelAdaptor(dict):
                     this_x += step
 
                 key = plot["fn"]
-                fn = model.fns[key]
+                fn = model.fn[key]
                 y_vals = list(map(fn, x_vals))
 
                 min_y = min(y_vals)

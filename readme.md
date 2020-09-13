@@ -1,18 +1,21 @@
 
 # Modeldrop
 
-Explore dynamical population models with scipy and dash
+Explore dynamical population models with scipy and dash.
 
-Modeldrop abstracts out the interface to the numerical solvers
-provided by scipy, and allows the focus on the meat of the equations.
-Simultaneously, modeldrop uses dash to provide an interactive 
-visualization and direct exploration of the model.
+Modeldrop abstracts out the UI interface and integration to allow
+you to focus on the meat of the equations. Modeldrop uses:
 
-Modeldrop provides a glue between:
 - numerical solvers in scipy
 - plotting with plotly or matplotlib
 - dash for interactive parameter exploration
 - twitter bootstrap for UI elements
+
+[[pycon.au talk on modeldrop]][1]
+
+[1]: https://www.youtube.com/watch?v=2-it3crJYu0&ab_channel=PyConAU "Tweaking the rise and fall of empires and economies"
+
+### Quick start
 
 ### Installation
 
@@ -20,80 +23,165 @@ Modeldrop is a written in Python 3 and can be installed using the
 standard Python installer:
 
     pip install -r requirements
-     
-### Quick start
-
+    
 Then run:
 
     python go -o
       
-The `-o` option opens the webbrowser for you.
-The `-d` debug option runs the flask server in debug mode, providing
-a hot-reloading mechanism for code changes.
+- `-o` option opens the webbrowser for you.
+- `-d` option runs the flask server in debug mode, allowing code hot-reloading
+
+If you want it to run it in a wsgi server, use `go:server`
 
 ### Development Guide
 
-Historically, the approach to implementing differential equations is
-to approach each individual equation directly. However, dynamical population models typically model flows of 
-populations between compartments. Thus it is better to approach
-it by keeping tabs of population flows.
+The package consists of two parts:
 
-The package consists of three parts:
+* `basemodel` core model to integrate the equations of a model
+* `app` dash adaptor to expose the model with an interactive UI and plots
 
-* `basemodel` core model with hooks into scipy
-* `app` dash adaptor to display an interactive model
+There is an optional package to use `basemodel` to generate .png's of the solutions:
+
 * `graphing` an adaptor to matplotlib to generate .png's
 
 #### The model
 
 `basemodel` provides an object class that allows the easy construction
-of a dynamical model, with methods to integrate these equations
-easily to watch variables evolve over time. This model is controlled
-by a set of parameters, and variation of the parameters represents
-an exploration of the different properties of the model.
+of a dynamical model, with built-in methods to integrate these equations
+ to model state variables evolving over time. 
 
-These sets are instantiated as an `AttrDict` which is simply a dictionary
-where the keys can be accessed as properties if the key string is
-in a single identifier form. Thus the dictionaries are:
+The information to represent the differential equations at any time point are defined in 
+the following `AttrDict` (a dictionary where the keys can also be accessed as properties):
     
-* `this.var` - are driving variables and are always accompained with
-          a differential dvar
-* `this.dvar` - holds the changes to the correspond var
-* `this.aux_var` - any extra variables that are calculated to help
-               calculate other var or other dvar
-* `this.param` - key parameter values that change the model
+* `self.var` - contains the values of the driving variables
+* `self.dvar` - contains the value of the differentials of the corresponding `self.var`
+* `self.aux_var` - any extra variables that are either used to calculate the above or for diagnostics
+* `self.param` - contains any parameter values of the equations that will not change over time
+* `self.fn` - contains any convenient functional forms that will be used to calculate the above
 
-#### Execution loop
+#### Setting up a model
 
-1. model.setup() - sets parameters
-2. which calls model.setup_ui()
-3. model.run()
-    1. model.init_vars()
-    2. integrate
-        model.param.dt and model.param.times
-        Creates function that
-            1. model.calc_aux_vars()
-            2. model.calc_dvars()
-            3. returns a vector based on vars.keys()
-        Passes this function to model.scipy_integrate
+The general approach to setting up a model is to override these methods of `BaseModel`:
 
-#### var and dvar
+1. `self.setup()` - setup values of `self.param`, making sure to call `self.setup_ui()` for
+   adding plots and GUI controls.
+2. `self.init_vars()` - initializes `self.var` at the beginning of the run, either using
+   hard-coded constants or reads from a `self.param` value. As well, any functional
+   forms used in calculations based on `self.param` values can be defined here.
+3. `self.calc_aux_vars()` -  this method will be called at every time-point where
+   we calculate any useful `self.aux_var` for further calculations and 
+   diagnostics. The calculations can use existing values of `self.var` or `self.dvar`
+   from the last time-point, and return values from functionals in `self.fn` using pre-existing values.
+4. `self.calc_dvars(t)` - this method will be called at every time-point where
+   we calculate `self.calc_dvar` using any
+   preexisting `self.var`, and `self.dvar` or `self.fn`, from the
+   last time-point, and any `self.aux_var` calculated from `self.calc_aux_var`. 
+   The `self.dvar` can be expressed as a single line expression,
+   or built up progressively.
+5. Once defined, we call `self.run`, which will first clear `self.solution` 
+   and re-intialize using `self.init_vars()`,
+    then integrate the equation over a period
+   of time from 0 to `self.param.time` in increments of `self.param.dt`. 
+6. After the calculation, the solutions are contained in a dictionary `self.solution`
+   where the keys are any key found in `self.var` or `self.aux_var`. And the value
+   of the dictionaries are the list of floats for every time point specified in the 
+   last step.
 
-#### optional flow compartments
+#### Optional flow compartments
 
-#### The plots
+For certain models, there are exact transfers of value between differentials. 
+Such models are sometimes called compartment models where the driving variables
+represents sub-populations where `self.dvar` correspond to flows of population
+between sub-populations.
 
-There are two plotting approaches provided here.
+In such cases, it makes it much easier to express `self.dvar` in terms of flows.
 
-First is a wrapper around matplotlib to generate images.
+```python
+self.aux_var_flows = [
+   ('population1', 'population2', 'some_aux_var')
+]
+```
+Then in `self.calc_dvar()`, one calls:
 
-The second is a pipe into plotly using dash.
+```python
+def calc_dvars(self, t):
+    for key in self.var.keys():
+        self.dvar[key] = 0
+    self.add_to_dvars_from_flows()
+```
 
+where `self.add_to_dvars_from_flows` will ensure that the same
+flow will be subtracted from `self.var.population1` and then added
+to `self.var.population2`, thus conserving the overall population.
+
+#### UI setup
+
+To setup the UI from your `BaseModel`-derived class, override the `setup_ui` method:
+
+```python
+def setup_ui(self):
     self.plots = [
         {"key": "People", "vars": ["population", "labor"]},
         {"key": "Output", "vars": ["output", "wages"]},
-    ]
-    self.fn_plots = [
         {"fn": "wageChange", "xlims": [0.8, 0.9999]},
     ]
+    
+    self.editable_params = [
+        { "key": "param1", "max": 10 },
+        ... 
+    ]
+```
+
+The `self.editable_params` must use keys that exist in `self.param`. Alternatively,
+one could simply call `self.extract_editable_params()`, which will automatically
+populate `self.eidtable_params` from the `self.param` dictionary.
+
+Once your model and ui setup is done, they can be setup as a dash server:
+
+```python
+dash = DashModelAdaptor([ YourModel(), ...])
+dash.run_server()
+```
+
+which will run on `http://127.0.0.1:8000`.
+
+### Plot dictionaries
+
+The `self.plots` dictionary is used to configure the plots shown in the Dash app.
+
+Each plot has several fields:
+
+   - `title` - the name of the plot
+   - `vars` - list of the `var` to plot, and these keys should be in `self.var` or `self.aux_var`
+   - `markdown` - a multi-line string containing markdown that will be converted to HTML
+      to display before the graph. Also allows katex inline equations
+   - `ymin`/`ymax` - limits to the y-axis
+   - `ymin_cutoff`/`ymax_cutoff` - limits that only apply if the data exceeds these cutoffs
+
+Alternatively, the plot could display functional forms in `self.fn`:
+
+   - `fn` - key of the function in `self.fn`, will be used to title graph
+   - `xlims` - max/min x-value for the argument of the function
+
+### Integration flow
+
+In the `self.run()` function, by default integration will be delegated to the odeint
+integrator. The integrator expects a derivative funcction that takes a list of
+floats, and a function `list(float) -> list(float)` where the return value is the
+derivative. 
+
+This function is called at every time point for the integration. It will
+ receive the vector represent the current state `x`. The function carries
+out these steps:
+
+1. Takes `x` to repopulate `self.var`.
+2. Calls `self.aux_vars()` that can use this `self.var`
+3. Creates a new `self.dvar`
+4. Calls `self.calc_dvars()` to fill out the `self.dvar`
+5. If the `self.aux_var_flows` then the `self.calc_dvars` will
+   use `self.is `self.add_to_dvars_from_flows()` to calculate
+   `self.dvar`    
+6. Then `self.dvar` is converted into an array of floats and returned.
+
+
 

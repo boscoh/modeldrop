@@ -34,14 +34,14 @@ class TurchinEliteDemographicModel(BaseModel):
         self.var.elite = self.param.initElite
         self.var.state = self.param.initState
 
-        self.fns.prodDeclineFn = make_approach_fn(
+        self.fn.prodDeclineFn = make_approach_fn(
             self.param.initProdDecline,
             self.param.finalStateProdDecline,
             self.param.stateAtHalfCarry,
         )
 
     def calc_aux_vars(self):
-        self.aux_var.prodDecline = self.fns.prodDeclineFn(self.var.state)
+        self.aux_var.prodDecline = self.fn.prodDeclineFn(self.var.state)
 
         self.aux_var.totalProduct = (
             self.var.producer

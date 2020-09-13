@@ -25,9 +25,9 @@ class KeenDynamicEconomyModel(BaseModel):
         self.setup_ui()
 
     def init_vars(self):
-        self.fns.wageFn = make_lin_fn(self.param.wageSlope, self.param.wageXOrigin)
+        self.fn.wageFn = make_lin_fn(self.param.wageSlope, self.param.wageXOrigin)
 
-        self.fns.investFn = make_lin_fn(
+        self.fn.investFn = make_lin_fn(
             self.param.investSlope, self.param.investXOrigin
         )
 
@@ -45,7 +45,7 @@ class KeenDynamicEconomyModel(BaseModel):
 
     def calc_aux_vars(self):
         self.aux_var.labor = self.var.laborFraction * self.var.population
-        self.aux_var.wageDelta = self.fns.wageFn(self.var.laborFraction)
+        self.aux_var.wageDelta = self.fn.wageFn(self.var.laborFraction)
         self.aux_var.laborWages = self.var.wage * self.aux_var.labor
         self.aux_var.wages = self.var.wage * self.aux_var.labor
 
@@ -58,7 +58,7 @@ class KeenDynamicEconomyModel(BaseModel):
             self.aux_var.profitShare / self.param.outputAccelerator
         )
 
-        self.aux_var.investDelta = self.fns.investFn(self.aux_var.profitRate)
+        self.aux_var.investDelta = self.fn.investFn(self.aux_var.profitRate)
         self.aux_var.investment = self.aux_var.investDelta * self.var.output
         self.aux_var.realGrowthRate = (
             self.aux_var.investDelta / self.param.outputAccelerator

@@ -33,7 +33,7 @@ class BaseModel:
         self.aux_var_flows = []
         self.param_flows = []
 
-        self.fns = AttrDict()
+        self.fn = AttrDict()
 
         self.param.time = 100
         self.param.dt = 1
@@ -163,7 +163,7 @@ class BaseModel:
             dataset = {
                 "graph_type": "line",
                 "xvals": x_vals,
-                "yvals": [self.fns[fn](x) for x in x_vals],
+                "yvals": [self.fn[fn](x) for x in x_vals],
                 "label": fn,
             }
             graph["datasets"].append(dataset)
@@ -210,8 +210,8 @@ class BaseModel:
                             f'plot {p["title"]} has var {v} not in self.vars nor in self.aux_vars'
                         )
             if "fn" in p:
-                if p["fn"] not in self.fns:
-                    raise Exception(f'plot {p["fn"]} has fn {p["fn"]} not in self.fns')
+                if p["fn"] not in self.fn:
+                    raise Exception(f'plot {p["fn"]} has fn {p["fn"]} not in self.fn')
 
         for p in self.editable_params:
             if p["key"] not in self.param:
