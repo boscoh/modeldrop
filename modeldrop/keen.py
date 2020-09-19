@@ -27,9 +27,7 @@ class KeenDynamicEconomyModel(BaseModel):
     def init_vars(self):
         self.fn.wageFn = make_lin_fn(self.param.wageSlope, self.param.wageXOrigin)
 
-        self.fn.investFn = make_lin_fn(
-            self.param.investSlope, self.param.investXOrigin
-        )
+        self.fn.investFn = make_lin_fn(self.param.investSlope, self.param.investXOrigin)
 
         self.var.wage = self.param.initialWage
         self.var.productivity = 1
@@ -108,7 +106,7 @@ class KeenDynamicEconomyModel(BaseModel):
             {"key": "wageXOrigin", "max": 1, "min": -1},
             {"key": "investSlope", "max": 30, "min": -30},
             {"key": "investXOrigin", "max": 0.5, "min": -0.5},
-            {"key": "initialLaborFraction", "max": 1.0, },
+            {"key": "initialLaborFraction", "max": 1.0,},
         ]
         self.plots = [
             {

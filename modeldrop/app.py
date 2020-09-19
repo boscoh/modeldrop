@@ -17,10 +17,11 @@ Installation:
 
 """
 
+import copy
 import logging
 import math
 import re
-import copy
+import textwrap
 import threading
 import time
 import traceback
@@ -35,19 +36,16 @@ import numpy
 from dash import Dash
 from dash.dependencies import Input, Output, State
 from dash.exceptions import PreventUpdate
-
 from flask import Flask, send_from_directory
-import textwrap
 
 from .basemodel import BaseModel
-
 
 logger = logging.getLogger(__name__)
 
 
+import dash_dangerously_set_inner_html
 import markdown as md
 import markdown_katex
-import dash_dangerously_set_inner_html
 
 
 def md_to_html(md_text):
@@ -239,7 +237,9 @@ class DashModelAdaptor(dict):
 
             logger.info(f"make_parameter_div key={input_key} {mark_dict}")
 
-            children.append(dbc.Label(f"{make_title(input_key)} = {value}", id=f'{p["id"]}-value'))
+            children.append(
+                dbc.Label(f"{make_title(input_key)} = {value}", id=f'{p["id"]}-value')
+            )
 
             children.append(
                 html.Div(
@@ -606,7 +606,9 @@ class DashModelAdaptor(dict):
 
         for model in self.models:
             plot_outputs = [Output(p["id"], "figure") for p in model.plots]
-            value_outputs = [Output(f'{p["id"]}-value', "children") for p in model.editable_params]
+            value_outputs = [
+                Output(f'{p["id"]}-value', "children") for p in model.editable_params
+            ]
             outputs = plot_outputs + value_outputs
             inputs = [Input(p["id"], "value") for p in model.editable_params]
             app.callback(outputs, inputs)(model.slider_callback)

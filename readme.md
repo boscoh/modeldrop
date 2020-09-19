@@ -4,14 +4,18 @@
 Explore dynamical population models with scipy and dash.
 
 Modeldrop abstracts out the UI interface and integration to allow
-you to focus on the meat of the equations. Modeldrop uses:
+you to focus on the logic of the equations. 
+
+Modeldrop uses:
 
 - numerical solvers in scipy
 - plotting with plotly or matplotlib
 - dash for interactive parameter exploration
 - twitter bootstrap for UI elements
 
-[[pycon.au talk on modeldrop]][1]
+Demo at [modeldrop.io](http://modeldrop.io).
+
+Talk about modeldrop from pycon.au "[Tweaking the rise and fall of empires and economies][1]".
 
 [1]: https://www.youtube.com/watch?v=2-it3crJYu0&ab_channel=PyConAU "Tweaking the rise and fall of empires and economies"
 
@@ -165,23 +169,23 @@ Alternatively, the plot could display functional forms in `self.fn`:
 
 ### Integration flow
 
-In the `self.run()` function, by default integration will be delegated to the odeint
-integrator. The integrator expects a derivative funcction that takes a list of
-floats, and a function `list(float) -> list(float)` where the return value is the
-derivative. 
+By default integration will be delegated to the odeint
+integrator through the `self.run()` method. In this method, 
+a new derivative function is built that will return
+the derivate in a form that odeint will recognize.
 
-This function is called at every time point for the integration. It will
- receive the vector represent the current state `x`. The function carries
-out these steps:
+This function has the signature `list(float) -> list(float)`. It
+will receive a vector carrying the current state `x` of
+the model a particular time, and return a vector representing the derivatives.
+The steps in the function are:
 
 1. Takes `x` to repopulate `self.var`.
-2. Calls `self.aux_vars()` that can use this `self.var`
-3. Creates a new `self.dvar`
-4. Calls `self.calc_dvars()` to fill out the `self.dvar`
-5. If the `self.aux_var_flows` then the `self.calc_dvars` will
-   use `self.is `self.add_to_dvars_from_flows()` to calculate
-   `self.dvar`    
-6. Then `self.dvar` is converted into an array of floats and returned.
+2. Calls `self.aux_vars()` that use only `self.var`.
+3. Empties `self.dvar` to zero.
+4. Calls `self.calc_dvars()` to fill out the `self.dvar`.
+5. If `self.aux_var_flows` exists  then calls `self.add_to_dvars_from_flows()`
+  to calculate `self.dvar` from the flows.
+6. Convert `self.dvar` to an array of floats and returns it.
 
 
 

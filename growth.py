@@ -1,5 +1,4 @@
 from modeldrop.basemodel import BaseModel, make_lin_fn
-from modeldrop.graphing import make_graphs_from_model
 
 
 class FundamentalPopulationModel(BaseModel):
@@ -68,13 +67,17 @@ class FundamentalPopulationModel(BaseModel):
                 "title": "Resource Constrained",
                 "vars": ["population2"],
             },
-            { 'fn': 'testFn', "xlims": [-5, 5]}
+            {"fn": "testFn", "xlims": [-5, 5]},
         ]
         self.extract_editable_params()
 
 
 if __name__ == "__main__":
     model = FundamentalPopulationModel()
-    make_graphs_from_model(model, transparent=True)
+
+    from modeldrop.modelgraph import make_graphs_from_model
+
+    make_graphs_from_model(model, "growth_pngs", transparent=True)
+
     # from modeldrop.app import show_models
     # show_models([FundamentalPopulationModel()], sys.argv)
