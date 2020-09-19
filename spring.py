@@ -1,12 +1,12 @@
 from modeldrop.basemodel import BaseModel
-
+import math
 
 class SpringModel(BaseModel):
     def setup(self):
         self.url = "https://github.com/boscoh/modeldrop/blob/master/spring.py"
-        self.param.a = 1
+        self.param.period = 1
         self.param.time = 5
-        self.param.dt = 0.1
+        self.param.dt = 0.01
         self.param.initX = 1
         self.param.initV = 0
         self.setup_ui()
@@ -17,7 +17,7 @@ class SpringModel(BaseModel):
 
     def calc_dvars(self, t):
         self.dvar.x = self.var.v
-        self.dvar.v = -self.param.a * self.var.x
+        self.dvar.v = -4 * math.pi * math.pi / self.param.period / self.param.period * self.var.x
 
     def setup_ui(self):
         self.plots = [
@@ -28,13 +28,13 @@ class SpringModel(BaseModel):
                     The Second order equation spring equation
                     
                     ```math
-                    \\frac{d^{2}}{dt^{2}}(x) = -a \\times x
+                    \\frac{d^{2}}{dt^{2}}(x) = - \\frac {4 \\pi^2}{period^2}   \\times x
                     ```
                     
-                    Can be reexpressed as: 
+                    Can be expressed as: 
 
                     ```math
-                    \\frac{d}{dt}(v) = -a \\times x
+                    \\frac{d}{dt}(v) = - \\frac {4 \\pi^2}{period^2} \\times x
                     ``` 
 
                     ```math
@@ -45,10 +45,17 @@ class SpringModel(BaseModel):
                 "vars": ["x", "v"],
             },
         ]
+        self.editable_params = [
+            {"key": "initX", "min": -5, "max": 5},
+            {"key": "initV", "min": -5, "max": 5}
+        ]
         self.extract_editable_params()
+
 
 
 if __name__ == "__main__":
     import sys
+
     from modeldrop.app import show_models
+
     show_models([SpringModel()], sys.argv)

@@ -44,7 +44,7 @@ class StandardThreePartEpidemiologyModel(BaseModel):
     def setup_flows(self):
         self.aux_var_flows = [
             ["susceptible", "infectious", "infectFlow"],
-            ["infectious", "recovered", "recoverFlow"]
+            ["infectious", "recovered", "recoverFlow"],
         ]
 
     def calc_dvars(self, t):
