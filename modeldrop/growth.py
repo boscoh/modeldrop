@@ -3,7 +3,7 @@ from modeldrop.basemodel import BaseModel, make_lin_fn
 
 class FundamentalPopulationModel(BaseModel):
     def setup(self):
-        self.url = "https://github.com/boscoh/modeldrop/blob/master/growth.py"
+        self.url = "https://github.com/boscoh/modeldrop/blob/master/modeldrop/growth.py"
 
         self.param.growth_rate = 0.035
         self.param.carrying_capacity = 1e3
@@ -70,14 +70,3 @@ class FundamentalPopulationModel(BaseModel):
             {"fn": "testFn", "xlims": [-5, 5]},
         ]
         self.extract_editable_params()
-
-
-if __name__ == "__main__":
-    model = FundamentalPopulationModel()
-
-    from modeldrop.modelgraph import make_graphs_from_model
-
-    make_graphs_from_model(model, "growth_pngs", transparent=True)
-
-    # from modeldrop.app import show_models
-    # show_models([FundamentalPopulationModel()], sys.argv)

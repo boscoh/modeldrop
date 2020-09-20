@@ -3,9 +3,9 @@ import math
 from modeldrop.basemodel import BaseModel
 
 
-class SpringModel(BaseModel):
+class ElasticSpringModel(BaseModel):
     def setup(self):
-        self.url = "https://github.com/boscoh/modeldrop/blob/master/spring.py"
+        self.url = "https://github.com/boscoh/modeldrop/blob/master/modeldrop/spring.py"
         self.param.period = 1
         self.param.time = 5
         self.param.dt = 0.01
@@ -44,6 +44,9 @@ class SpringModel(BaseModel):
                     ```math
                     \\frac{d}{dt}(x) = v
                     ``` 
+                    
+                    This produces the pefectly oscillating behavior of a spring
+                    with a given period of repetition:
                     """,
                 "title": "Spring",
                 "vars": ["x", "v"],
@@ -61,4 +64,4 @@ if __name__ == "__main__":
 
     from modeldrop.app import show_models
 
-    show_models([SpringModel()], sys.argv)
+    show_models([ElasticSpringModel()], sys.argv)
