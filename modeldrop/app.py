@@ -506,9 +506,9 @@ class DashModelAdaptor(dict):
                             
                             <br>
                             
-                            A Python library to explore
-                            dynamical models that use
-                            ordinary differential equations.
+                            Python library to explore dynamical models 
+                            with scipy and dash, with a focus on
+                            dynamic population models.
                             
                             <https://github.com/boscoh/modeldrop>
                             
