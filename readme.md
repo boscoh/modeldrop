@@ -15,9 +15,9 @@ Modeldrop uses:
 
 Demo at [modeldrop.io](http://modeldrop.io).
 
-Talk about modeldrop from pycon.au "[Tweaking the rise and fall of empires and economies][1]".
+Talk from pyconau20 "[Tweaking the rise and fall of empires and economies][1]".
 
-[1]: https://www.youtube.com/watch?v=2-it3crJYu0&ab_channel=PyConAU "Tweaking the rise and fall of empires and economies"
+[1]: https://www.youtube.com/watch?v=2-it3crJYu0&ab_channel=PyConAU 
 
 ### Quick start
 
@@ -74,8 +74,8 @@ The general approach to setting up a model is to override these methods of `Base
    forms used in calculations based on `self.param` values can be defined here.
 3. `self.calc_aux_vars()` -  this method will be called at every time-point where
    we calculate any useful `self.aux_var` for further calculations and 
-   diagnostics. The calculations can use existing values of `self.var` or `self.dvar`
-   from the last time-point, and return values from functionals in `self.fn` using pre-existing values.
+   diagnostics. The calculations can use existing values of `self.var` 
+   from the last time-point, or piped through functionals in `self.fn`.
 4. `self.calc_dvars(t)` - this method will be called at every time-point where
    we calculate `self.calc_dvar` using any
    preexisting `self.var`, and `self.dvar` or `self.fn`, from the
