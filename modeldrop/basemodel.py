@@ -65,40 +65,6 @@ class BaseModel:
     def reset_solutions(self):
         self.solution.clear()
 
-    def update(self, t):
-        self.calc_dvars(t)
-        for key in self.dvar.keys():
-            self.var[key] += self.dvar[key] * self.param.dt
-        self.calc_vars()
-
-    def crude_integrate(self):
-        for time in self.times:
-            self.update(time)
-            for key in self.keys:
-                if not key in self.solution:
-                    self.solution[key] = []
-                if math.isfinite(self.var[key]):
-                    self.solution[key].append(self.var[key])
-                else:
-                    self.solution[key].append(None)
-
-    def scipy_integrate(self):
-        def calc_dvar_array(var_array, t):
-            for v, key in zip(var_array, self.keys):
-                self.var[key] = v
-            self.calc_aux_vars()
-            self.calc_dvars(t)
-            return [self.dvar[k] for k in self.keys]
-
-        y_init = [self.var[key] for key in self.keys]
-
-        self.output, info_dict = odeint(
-            calc_dvar_array, y_init, self.times, full_output=True
-        )
-
-        for i, key in enumerate(self.keys):
-            self.solution[key] = self.output[:, i]
-
     def add_to_dvars_from_flows(self):
         flows = []
 
@@ -116,33 +82,6 @@ class BaseModel:
             for (from_key, to_key, val) in flows:
                 self.dvar[from_key] -= val
                 self.dvar[to_key] += val
-
-    def chunky_run(self):
-        self.check_consistency()
-        self.reset_solutions()
-        self.init_vars()
-        self.times = list(float_range(0, self.param.time, self.param.dt))
-        self.keys = self.var.keys()
-        self.crude_integrate()
-
-    def run(self):
-        self.check_consistency()
-        self.reset_solutions()
-        self.init_vars()
-        self.times = list(float_range(0, self.param.time, self.param.dt))
-        self.keys = list(self.var.keys())
-        self.scipy_integrate()
-
-    def calc_aux_var_solutions(self):
-        for i_time, time in enumerate(self.times):
-            for key in self.keys:
-                if key in self.solution:
-                    self.var[key] = self.solution[key][i_time]
-            self.calc_aux_vars()
-            for key, value in self.aux_var.items():
-                if key not in self.solution:
-                    self.solution[key] = []
-                self.solution[key].append(value)
 
     def check_consistency(self):
         self.init_vars()
@@ -187,6 +126,67 @@ class BaseModel:
                 raise Exception(f"flow to_key {t} not in self.var")
             if p not in self.param:
                 raise Exception(f"flow param {p} not in self.param")
+
+    def euler_integrate(self):
+        for key in self.keys:
+            self.solution[key] = []
+
+        for t in self.times:
+            self.calc_aux_vars()
+            self.calc_dvars(t)
+
+            for key in self.keys:
+                self.var[key] += self.dvar[key] * self.param.dt
+
+            for key in self.keys:
+                if math.isfinite(self.var[key]):
+                    self.solution[key].append(self.var[key])
+                else:
+                    self.solution[key].append(None)
+
+    def scipy_odeint_integrate(self):
+        def calc_dvar_array(var_array, t):
+            for v, key in zip(var_array, self.keys):
+                self.var[key] = v
+            self.calc_aux_vars()
+            self.calc_dvars(t)
+            return [self.dvar[k] for k in self.keys]
+
+        y_init = [self.var[key] for key in self.keys]
+
+        self.output, info_dict = odeint(
+            calc_dvar_array, y_init, self.times, full_output=True
+        )
+
+        for i, key in enumerate(self.keys):
+            self.solution[key] = self.output[:, i]
+
+    def run(self, integrate_method="scipy_odeint_integrate"):
+        self.check_consistency()
+        self.reset_solutions()
+        self.init_vars()
+        self.times = list(float_range(0, self.param.time, self.param.dt))
+        self.keys = list(self.var.keys())
+
+        if integrate_method == "scipy_odeint_integrate":
+            self.scipy_odeint_integrate()
+        elif integrate_method == "euler_integrate":
+            self.euler_integrate()
+        else:
+            raise Exception(f"integrate_method {integrate_method} not recognized")
+
+        self.calc_aux_var_solutions()
+
+    def calc_aux_var_solutions(self):
+        for i_time, time in enumerate(self.times):
+            for key in self.keys:
+                if key in self.solution:
+                    self.var[key] = self.solution[key][i_time]
+            self.calc_aux_vars()
+            for key, value in self.aux_var.items():
+                if key not in self.solution:
+                    self.solution[key] = []
+                self.solution[key].append(value)
 
     def extract_editable_params(self):
         for k in self.param:
