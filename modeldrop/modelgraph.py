@@ -4,7 +4,6 @@ from .graphing import write_graph
 
 def make_graphs_from_model(model, directory=".", transparent=False):
     model.run()
-    model.calc_aux_var_solutions()
 
     graphs = []
     for plot in model.plots:

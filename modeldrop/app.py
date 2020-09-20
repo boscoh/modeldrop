@@ -564,7 +564,6 @@ class DashModelAdaptor(dict):
                         model.param[p["key"]] = float(val)
                 logger.info(f"slider_callback run {model.param}")
                 model.run()
-                model.calc_aux_var_solutions()
                 figures = self.make_figures(model)
             except Exception as e:
                 traceback.print_exc()

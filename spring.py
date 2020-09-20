@@ -1,5 +1,7 @@
-from modeldrop.basemodel import BaseModel
 import math
+
+from modeldrop.basemodel import BaseModel
+
 
 class SpringModel(BaseModel):
     def setup(self):
@@ -17,7 +19,9 @@ class SpringModel(BaseModel):
 
     def calc_dvars(self, t):
         self.dvar.x = self.var.v
-        self.dvar.v = -4 * math.pi * math.pi / self.param.period / self.param.period * self.var.x
+        self.dvar.v = (
+            -4 * math.pi * math.pi / self.param.period / self.param.period * self.var.x
+        )
 
     def setup_ui(self):
         self.plots = [
@@ -47,10 +51,9 @@ class SpringModel(BaseModel):
         ]
         self.editable_params = [
             {"key": "initX", "min": -5, "max": 5},
-            {"key": "initV", "min": -5, "max": 5}
+            {"key": "initV", "min": -5, "max": 5},
         ]
         self.extract_editable_params()
-
 
 
 if __name__ == "__main__":
