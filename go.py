@@ -1,19 +1,21 @@
 import logging
 import sys
 
-from growth import FundamentalPopulationModel
 from modeldrop.app import DashModelAdaptor, open_url_in_background
 from modeldrop.demo import TurchinEliteDemographicModel
 from modeldrop.ecology import LoktaVolterraEcologyModel
 from modeldrop.epi import StandardThreePartEpidemiologyModel
 from modeldrop.goodwin import GoodwinBusinessCycleModel
+from modeldrop.growth import FundamentalPopulationModel
 from modeldrop.keen import KeenDynamicEconomyModel
 from modeldrop.property import PropertyVsFundInvestmentModel
+from modeldrop.spring import ElasticSpringModel
 from modeldrop.turchin import TurchinDemographicStateModel
 
 dash = DashModelAdaptor(
     [
         FundamentalPopulationModel(),
+        ElasticSpringModel(),
         LoktaVolterraEcologyModel(),
         StandardThreePartEpidemiologyModel(),
         GoodwinBusinessCycleModel(),
