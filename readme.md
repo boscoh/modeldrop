@@ -187,5 +187,7 @@ The steps in the function are:
   to calculate `self.dvar` from the flows.
 6. Convert `self.dvar` to an array of floats and returns it.
 
+### TODO
 
-
+* reset button
+* split off graphing to third party module

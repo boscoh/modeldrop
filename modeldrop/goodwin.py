@@ -111,7 +111,7 @@ class GoodwinBusinessCycleModel(BaseModel):
                     depends on wages, leading to the cycle.
                     """,
                 "title": "Output",
-                "vars": ["output", "wages"],
+                "vars": ["output", "wages", "capital"],
             },
             {
                 "markdown": """
