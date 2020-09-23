@@ -272,6 +272,6 @@ class KeenDynamicEconomyModel(BaseModel):
                     
                     """,
                 "title": "Output",
-                "vars": ["wages", "profit", "bank", "debt", "output",],
+                "vars": ["wages", "profit", "bank", "capital", "debt", "output",],
             },
         ]
