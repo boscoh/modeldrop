@@ -35,6 +35,7 @@ class BaseModel:
 
         self.fn = AttrDict()
 
+        self.integrate_method = "scipy_odeint_integrate"
         self.param.time = 100
         self.param.dt = 1
         self.times = None
@@ -138,11 +139,16 @@ class BaseModel:
             for key in self.keys:
                 self.var[key] += self.dvar[key] * self.param.dt
 
+            is_break = False
             for key in self.keys:
                 if math.isfinite(self.var[key]):
                     self.solution[key].append(self.var[key])
                 else:
                     self.solution[key].append(None)
+                    is_break = True
+
+            if is_break:
+                break
 
     def scipy_odeint_integrate(self):
         def calc_dvar_array(var_array, t):
@@ -161,27 +167,29 @@ class BaseModel:
         for i, key in enumerate(self.keys):
             self.solution[key] = self.output[:, i]
 
-    def run(self, integrate_method="scipy_odeint_integrate"):
-        self.check_consistency()
+    def run(self):
         self.reset_solutions()
         self.init_vars()
-        self.times = list(float_range(0, self.param.time, self.param.dt))
         self.keys = list(self.var.keys())
+        self.check_consistency()
+        self.times = list(float_range(0, self.param.time, self.param.dt))
 
-        if integrate_method == "scipy_odeint_integrate":
+        if self.integrate_method == "scipy_odeint_integrate":
             self.scipy_odeint_integrate()
-        elif integrate_method == "euler_integrate":
+        elif self.integrate_method == "euler_integrate":
             self.euler_integrate()
         else:
-            raise Exception(f"integrate_method {integrate_method} not recognized")
+            raise Exception(f"integrate_method {self.integrate_method} not recognized")
 
         self.calc_aux_var_solutions()
 
     def calc_aux_var_solutions(self):
         for i_time, time in enumerate(self.times):
             for key in self.keys:
-                if key in self.solution:
+                if key in self.solution and len(self.solution[key]) > i_time:
                     self.var[key] = self.solution[key][i_time]
+                else:
+                    self.var[key] = None
             self.calc_aux_vars()
             for key, value in self.aux_var.items():
                 if key not in self.solution:
