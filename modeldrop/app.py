@@ -344,10 +344,10 @@ class DashModelAdaptor(dict):
                     y_vals = []
                     if key in model.solution:
                         for x, y in zip(model.times, model.solution[key]):
-                            if numpy.isnan(x):
+                            if x is None or numpy.isnan(x):
                                 logger.info(f"make_stages_graphs_div error x={x}")
                                 continue
-                            if numpy.isnan(y):
+                            if y is None or numpy.isnan(y):
                                 logger.info(f"make_stages_graphs_div error y={y}")
                                 continue
                             x_vals.append(float(x))
@@ -436,7 +436,7 @@ class DashModelAdaptor(dict):
             [
                 dbc.Col(
                     self.make_parameter_div(),
-                    xs=12,
+                    xs=4,
                     lg=3,
                     md=4,
                     sm=4,
@@ -458,11 +458,12 @@ class DashModelAdaptor(dict):
                             "overflow": "scroll",
                             "boxSizing": "border-box",
                             "padding-left": "30px",
-                            "padding-right": "30px",
+                            "padding-right": "0px",
                             "height": "calc(100vh)",
+                            "max-width": "750px",
                         },
                     ),
-                    xs=12,
+                    xs=8,
                     lg=9,
                     md=8,
                     sm=8,
@@ -477,7 +478,7 @@ class DashModelAdaptor(dict):
         return dbc.Row(
             [
                 dbc.Col(
-                    xs=12,
+                    xs=4,
                     lg=3,
                     md=4,
                     sm=4,
@@ -525,9 +526,10 @@ class DashModelAdaptor(dict):
                             "padding-left": "30px",
                             "padding-right": "30px",
                             "height": "calc(100vh)",
+                            "max-width": "750px",
                         },
                     ),
-                    xs=12,
+                    xs=8,
                     lg=9,
                     md=8,
                     sm=8,
@@ -542,7 +544,7 @@ class DashModelAdaptor(dict):
                 dcc.Location(id="url", refresh=False),
                 # object to start polling server to trigger events
                 dcc.Interval(id="interval-component", interval=1000, n_intervals=0),
-                dbc.Container(id="content",),
+                dbc.Container(id="content", fluid=True),
             ],
             id="page_layout",
             style={"overflow": "hidden"},
