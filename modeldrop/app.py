@@ -218,6 +218,7 @@ class DashModelAdaptor(dict):
             html.H6("Parameters", style={"marginBottom": "1em"}),
         ]
         model = self.model
+
         for p in self.model.editable_params:
             input_key = p["key"]
 
@@ -259,9 +260,12 @@ class DashModelAdaptor(dict):
                 )
             )
 
+        reset_id = f"{model.prefix}-reset"
+        children.append(dbc.Button("Reset", color="light", id=reset_id))
+
         return html.Div(
             children=children,
-            className="text-left",
+            className="text-left pb-5",
             style={
                 "fontSize": "0.8em",
                 "letterSpacing": "0.05em",
@@ -613,6 +617,15 @@ class DashModelAdaptor(dict):
             outputs = plot_outputs + value_outputs
             inputs = [Input(p["id"], "value") for p in model.editable_params]
             app.callback(outputs, inputs)(model.slider_callback)
+
+            inputs = [Input(f"{model.prefix}-reset", "n_clicks")]
+            outputs = [Output(p["id"], "value") for p in model.editable_params]
+            def make_reset_fn(model):
+                def fn(n_clicks):
+                    keys = [p["key"] for p in model.editable_params]
+                    return [model.init_param[k] for k in keys]
+                return fn
+            app.callback(outputs, inputs)(make_reset_fn(model))
 
     def run_server(self, port=8050, is_debug=True):
         self.app.run_server(debug=is_debug, port=port)
