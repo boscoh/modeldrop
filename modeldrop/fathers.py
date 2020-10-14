@@ -106,9 +106,11 @@ class TurchinFathersAndSonsModel(BaseModel):
                 aversion to radicalism:
                 
                 ```math
-                R = \\sum_{age} radical_{age} \\times (
+                R = (
                     radicalisation 
-                    - aversion \\times \\sum_{age} moderate_{age})
+                    - aversion \\times \\sum_{age} moderate_{age}
+                    ) 
+                    \\times  \\sum_{age} radical_{age} 
                 ```
 
                 Radicals are disenchanted after a delay of a certain number of years
