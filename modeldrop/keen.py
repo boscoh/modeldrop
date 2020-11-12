@@ -14,6 +14,7 @@ class KeenDynamicEconomyModel(BaseModel):
         self.param.productivityRate = 0.02
 
         self.param.interestRate = 0.04
+
         self.param.investSlope = 10
         self.param.investXOrigin = 0.03
         self.param.wageSlope = 4
@@ -139,12 +140,8 @@ class KeenDynamicEconomyModel(BaseModel):
                     \\frac{d}{dt}(capital) = investment - depreciationRate \\times capital
                     ```
                     
-                    Productivity is assumed to increase steadily due to innovations in
-                    technology:
-
-                    ```math
-                    \\frac{d}{dt}(productivity) = productivity \\times productivityGrowthRate
-                    ```
+                    Technology improvements to capital are embedded
+                    in the capital accelerator term.
 
                     The model generates the evolution of the relative incomes 
                     of labor (wage share), capital (profit share) and bank 
@@ -166,6 +163,13 @@ class KeenDynamicEconomyModel(BaseModel):
 
                     ```math
                     \\frac{d}{dt}(population) = population \\times populationGrowthRate
+                    ```
+
+                    Productivity is assumed to increase steadily due to innovations in
+                    technology:
+
+                    ```math
+                    \\frac{d}{dt}(productivity) = productivity \\times productivityGrowthRate
                     ```
 
                     The population grows exponentially, but labor fluctuates with the typical 

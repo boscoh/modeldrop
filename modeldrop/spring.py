@@ -28,14 +28,20 @@ class ElasticSpringModel(BaseModel):
             {
                 "markdown": """
              
-                    ### Spring
-                    The Second order equation spring equation
+                    The spring is the cleanest dynamical model
+                    of a oscillating periodic cycle.
+                    It is represented by this very simple
+                    second order differential equation:
                     
                     ```math
                     \\frac{d^{2}}{dt^{2}}(x) = - \\frac {4 \\pi^2}{period^2}   \\times x
                     ```
                     
-                    Can be expressed as: 
+                    A simple transformation, gives the equivalent 
+                    motion in terms of two first order
+                    equations of x and v, which gives us the essential
+                    predator-prey relationship without the intrinsic 
+                    growth factors:  
 
                     ```math
                     \\frac{d}{dt}(v) = - \\frac {4 \\pi^2}{period^2} \\times x
@@ -44,13 +50,10 @@ class ElasticSpringModel(BaseModel):
                     ```math
                     \\frac{d}{dt}(x) = v
                     ``` 
-                    
-                    This produces the pefectly oscillating behavior of a spring
-                    with a given period of repetition:
                     """,
                 "title": "Spring",
                 "vars": ["x", "v"],
-            },
+            }
         ]
         self.editable_params = [
             {"key": "initX", "min": -5, "max": 5},

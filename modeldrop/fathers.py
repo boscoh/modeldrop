@@ -84,11 +84,12 @@ class TurchinFathersAndSonsModel(BaseModel):
             {
                 "markdown": """
                 
-                Peter Turchin's fathers-and-sons models the observed generational
+                Peter Turchin's fathers-and-sons model reproduces
+                 the observed generational
                 changes in violence that occur every 50 or so years, in societies as
-                diverse as the USA, the Roman empire, and Chinese dynasties. 
+                diverse as the USA, the Roman empire, and various Chinese dynasties. 
                 
-                The model is based on modelling radicalization
+                It is based on modelling radicalization
                 like a virus and leans on standard epidemiological modelling. The 
                 model consists of three categories of people:
                 
@@ -107,7 +108,7 @@ class TurchinFathersAndSonsModel(BaseModel):
                 ```
                    
                 Naive people are radicalized by the radicalization rate R,
-                which is proprotional to the number of radicals 
+                which is proportional to the number of radicals 
                 in society at the time, but is also reduced if there 
                  are sufficient number of moderates, who are adverse to
                  radicalisation:
@@ -121,7 +122,7 @@ class TurchinFathersAndSonsModel(BaseModel):
                 ```
 
                 Radicals are disenchanted after a delay of a certain number of years
-                of being extermists, and this rate D defines the movement of radicals 
+                of being extremists, and this rate D defines the movement of radicals 
                 to moderate:  
                 
                 ```math
@@ -150,8 +151,6 @@ class TurchinFathersAndSonsModel(BaseModel):
                     + moderate_{age - 1} 
                     + radical_{age - 1} \\times D
                 ```
-                
-
                 """,
                 "title": "All",
                 "vars": ["naive_total", "radical_total", "moderate_total"],
