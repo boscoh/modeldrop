@@ -70,12 +70,30 @@ class LoktaVolterraEcologyModel(BaseModel):
         ]
         self.editable_params = [
             {"key": "time", "max": 300},
-            {"key": "initialPrey", "max": 20,},
-            {"key": "initialPredator", "max": 20,},
-            {"key": "preyBirthRate", "max": 2,},
-            {"key": "predationRate", "max": 2,},
-            {"key": "predatorDeathRate", "max": 2,},
-            {"key": "digestionRate", "max": 2,},
+            {
+                "key": "initialPrey",
+                "max": 20,
+            },
+            {
+                "key": "initialPredator",
+                "max": 20,
+            },
+            {
+                "key": "preyBirthRate",
+                "max": 2,
+            },
+            {
+                "key": "predationRate",
+                "max": 2,
+            },
+            {
+                "key": "predatorDeathRate",
+                "max": 2,
+            },
+            {
+                "key": "digestionRate",
+                "max": 2,
+            },
         ]
         self.extract_editable_params()
 

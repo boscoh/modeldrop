@@ -70,17 +70,17 @@ class BaseModel:
         flows = []
 
         if len(self.aux_var_flows):
-            for (from_key, to_key, aux_var_key) in self.aux_var_flows:
+            for from_key, to_key, aux_var_key in self.aux_var_flows:
                 val = self.aux_var[aux_var_key]
                 flows.append([from_key, to_key, val])
 
         if len(self.param_flows):
-            for (from_key, to_key, param_key) in self.param_flows:
+            for from_key, to_key, param_key in self.param_flows:
                 val = self.param[param_key]
                 flows.append([from_key, to_key, val])
 
         if len(flows):
-            for (from_key, to_key, val) in flows:
+            for from_key, to_key, val in flows:
                 self.dvar[from_key] -= val
                 self.dvar[to_key] += val
 
@@ -102,17 +102,17 @@ class BaseModel:
                 for v in p["vars"]:
                     if v not in self.var and v not in self.aux_var:
                         raise Exception(
-                            f'plot {p["title"]} has var {v} not in self.vars nor in self.aux_vars'
+                            f"plot {p['title']} has var {v} not in self.vars nor in self.aux_vars"
                         )
             if "fn" in p:
                 if p["fn"] not in self.fn:
-                    raise Exception(f'plot {p["fn"]} has fn {p["fn"]} not in self.fn')
+                    raise Exception(f"plot {p['fn']} has fn {p['fn']} not in self.fn")
 
         for p in self.editable_params:
             if p["key"] not in self.param:
-                raise Exception(f'editable param {p["key"]} not in self.param')
+                raise Exception(f"editable param {p['key']} not in self.param")
 
-        for (f, t, v) in self.aux_var_flows:
+        for f, t, v in self.aux_var_flows:
             if f not in self.var:
                 raise Exception(f"flow from_key {f} not in self.var")
             if t not in self.var:
@@ -120,7 +120,7 @@ class BaseModel:
             if v not in self.aux_var:
                 raise Exception(f"flow aux_var {v} not in self.aux_var")
 
-        for (f, t, p) in self.param_flows:
+        for f, t, p in self.param_flows:
             if f not in self.var:
                 raise Exception(f"flow from_key {f} not in self.var")
             if t not in self.var:
@@ -150,6 +150,75 @@ class BaseModel:
             if is_break:
                 break
 
+    def runge_kutta_integrate(self):
+        """4th order Runge-Kutta integration method"""
+        for key in self.keys:
+            self.solution[key] = []
+
+        # Store initial values
+        var_backup = AttrDict()
+        for key in self.keys:
+            var_backup[key] = self.var[key]
+
+        for t in self.times:
+            # Store current values
+            for key in self.keys:
+                self.solution[key].append(self.var[key])
+
+            # Calculate k1
+            self.calc_aux_vars()
+            self.calc_dvars(t)
+            k1 = AttrDict()
+            for key in self.keys:
+                k1[key] = self.dvar[key] * self.param.dt
+
+            # Calculate k2
+            for key in self.keys:
+                self.var[key] = var_backup[key] + k1[key] / 2.0
+            self.calc_aux_vars()
+            self.calc_dvars(t + self.param.dt / 2.0)
+            k2 = AttrDict()
+            for key in self.keys:
+                k2[key] = self.dvar[key] * self.param.dt
+
+            # Calculate k3
+            for key in self.keys:
+                self.var[key] = var_backup[key] + k2[key] / 2.0
+            self.calc_aux_vars()
+            self.calc_dvars(t + self.param.dt / 2.0)
+            k3 = AttrDict()
+            for key in self.keys:
+                k3[key] = self.dvar[key] * self.param.dt
+
+            # Calculate k4
+            for key in self.keys:
+                self.var[key] = var_backup[key] + k3[key]
+            self.calc_aux_vars()
+            self.calc_dvars(t + self.param.dt)
+            k4 = AttrDict()
+            for key in self.keys:
+                k4[key] = self.dvar[key] * self.param.dt
+
+            # Update variables using RK4 formula
+            is_break = False
+            for key in self.keys:
+                delta = (k1[key] + 2 * k2[key] + 2 * k3[key] + k4[key]) / 6.0
+                self.var[key] = var_backup[key] + delta
+
+                if not math.isfinite(self.var[key]):
+                    is_break = True
+                    break
+
+            if is_break:
+                # Add None values for remaining time points
+                for key in self.keys:
+                    self.solution[key].append(None)
+                break
+
+            # Update backup for next iteration
+            for key in self.keys:
+                var_backup[key] = self.var[key]
+
     def scipy_odeint_integrate(self):
         def calc_dvar_array(var_array, t):
             for v, key in zip(var_array, self.keys):
@@ -178,6 +247,8 @@ class BaseModel:
             self.scipy_odeint_integrate()
         elif self.integrate_method == "euler_integrate":
             self.euler_integrate()
+        elif self.integrate_method == "runge_kutta_integrate":
+            self.runge_kutta_integrate()
         else:
             raise Exception(f"integrate_method {self.integrate_method} not recognized")
 

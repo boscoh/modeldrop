@@ -366,7 +366,6 @@ def make_matplotlib_figure(graph: dict, png: str) -> Figure:
 
         # loop through all the graph views
         for dataset in graph.get("datasets", []):
-
             if ax == ax1 and dataset.get("secondary"):
                 continue
 

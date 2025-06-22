@@ -29,10 +29,15 @@ dash = DashModelAdaptor(
 )
 server = dash.server
 
-if __name__ == "__main__":
+
+def main():
     logging.basicConfig(level=logging.DEBUG)
     port = "8050"
     if "-o" in sys.argv:
         open_url_in_background(f"http://127.0.0.1:{port}/")
     is_debug = "-d" in sys.argv
     dash.run_server(port=port, is_debug=is_debug)
+
+
+if __name__ == "__main__":
+    main()

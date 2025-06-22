@@ -127,9 +127,24 @@ class TurchinDemographicStateModel(BaseModel):
 
         self.editable_params = [
             {"key": "time", "max": 1000},
-            {"key": "maxSurplus", "max": 2,},
-            {"key": "taxOnSurplus", "max": 2,},
-            {"key": "growth", "max": 0.1,},
-            {"key": "stateRevenueAtHalfCapacity", "max": 50,},
-            {"key": "maxCarryCapacity", "max": 10,},
+            {
+                "key": "maxSurplus",
+                "max": 2,
+            },
+            {
+                "key": "taxOnSurplus",
+                "max": 2,
+            },
+            {
+                "key": "growth",
+                "max": 0.1,
+            },
+            {
+                "key": "stateRevenueAtHalfCapacity",
+                "max": 50,
+            },
+            {
+                "key": "maxCarryCapacity",
+                "max": 10,
+            },
         ]

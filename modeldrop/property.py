@@ -75,13 +75,28 @@ class PropertyVsFundInvestmentModel(BaseModel):
 
     def setup_ui(self):
         self.editable_params = [
-            {"key": "time", "max": 100,},
-            {"key": "mortgageLength", "max": 100,},
-            {"key": "interestRate", "max": 0.5,},
+            {
+                "key": "time",
+                "max": 100,
+            },
+            {
+                "key": "mortgageLength",
+                "max": 100,
+            },
+            {
+                "key": "interestRate",
+                "max": 0.5,
+            },
             {"key": "initialProperty", "max": 1000000},
             {"key": "deposit", "max": 1000000},
-            {"key": "propertyRate", "max": 0.5,},
-            {"key": "fundRate", "max": 0.5,},
+            {
+                "key": "propertyRate",
+                "max": 0.5,
+            },
+            {
+                "key": "fundRate",
+                "max": 0.5,
+            },
         ]
 
         self.plots = [

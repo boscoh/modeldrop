@@ -97,17 +97,38 @@ class KeenDynamicEconomyModel(BaseModel):
 
     def setup_ui(self):
         self.editable_params = [
-            {"key": "time", "max": 500,},
-            {"key": "birthRate", "max": 0.1,},
-            {"key": "productivityRate", "max": 0.1,},
-            {"key": "outputAccelerator", "max": 5,},
-            {"key": "depreciationRate", "max": 0.1,},
-            {"key": "interestRate", "max": 0.2,},
+            {
+                "key": "time",
+                "max": 500,
+            },
+            {
+                "key": "birthRate",
+                "max": 0.1,
+            },
+            {
+                "key": "productivityRate",
+                "max": 0.1,
+            },
+            {
+                "key": "outputAccelerator",
+                "max": 5,
+            },
+            {
+                "key": "depreciationRate",
+                "max": 0.1,
+            },
+            {
+                "key": "interestRate",
+                "max": 0.2,
+            },
             {"key": "wageSlope", "max": 30, "min": -30},
             {"key": "wageXOrigin", "max": 1, "min": -1},
             {"key": "investSlope", "max": 30, "min": -30},
             {"key": "investXOrigin", "max": 0.5, "min": -0.5},
-            {"key": "initialLaborFraction", "max": 1.0,},
+            {
+                "key": "initialLaborFraction",
+                "max": 1.0,
+            },
         ]
         self.plots = [
             {
@@ -276,6 +297,13 @@ class KeenDynamicEconomyModel(BaseModel):
                     
                     """,
                 "title": "Output",
-                "vars": ["wages", "profit", "bank", "capital", "debt", "output",],
+                "vars": [
+                    "wages",
+                    "profit",
+                    "bank",
+                    "capital",
+                    "debt",
+                    "output",
+                ],
             },
         ]

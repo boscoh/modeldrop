@@ -99,8 +99,14 @@ class StandardThreePartEpidemiologyModel(BaseModel):
             {"title": "Effective Reproduction Number", "vars": ["rn"]},
         ]
         self.editable_params = [
-            {"key": "time", "max": 1000,},
-            {"key": "infectiousPeriod", "max": 100,},
+            {
+                "key": "time",
+                "max": 1000,
+            },
+            {
+                "key": "infectiousPeriod",
+                "max": 100,
+            },
             {"key": "reproductionNumber", "max": 15},
             {"key": "initialPrevalence", "max": 100000},
             {"key": "initialPopulation", "max": 100000},

@@ -30,8 +30,8 @@ from pathlib import Path
 from urllib.request import urlopen
 
 import dash_bootstrap_components as dbc
-import dash_core_components as dcc
-import dash_html_components as html
+from dash import dcc
+from dash import html
 import numpy
 from dash import Dash
 from dash.dependencies import Input, Output, State
@@ -43,7 +43,6 @@ from .basemodel import BaseModel
 logger = logging.getLogger(__name__)
 
 
-import dash_dangerously_set_inner_html
 import markdown as md
 import markdown_katex
 
@@ -51,12 +50,6 @@ import markdown_katex
 def md_to_html(md_text):
     md_text = textwrap.dedent(md_text)
     return md.markdown(md_text, extensions=["markdown_katex"])
-
-
-def make_md_div(md):
-    return html.Div(
-        dash_dangerously_set_inner_html.DangerouslySetInnerHTML(md_to_html(md))
-    )
 
 
 millnames = ["", "k", "m", "b", "t"]
@@ -197,8 +190,7 @@ class DashModelAdaptor(dict):
         return None
 
     def make_models_dropdown_menu(self):
-        """Create a dropdown menu component with the assets.
-        """
+        """Create a dropdown menu component with the assets."""
         menu_items = [dbc.NavLink(f"Home", external_link=True, href=f"./")] + [
             dbc.NavLink(f"{model.name}", external_link=True, href=f"./{model.prefix}")
             for model in self.models
@@ -239,7 +231,7 @@ class DashModelAdaptor(dict):
             logger.info(f"make_parameter_div key={input_key} {mark_dict}")
 
             children.append(
-                dbc.Label(f"{make_title(input_key)} = {value}", id=f'{p["id"]}-value')
+                dbc.Label(f"{make_title(input_key)} = {value}", id=f"{p['id']}-value")
             )
 
             children.append(
@@ -321,7 +313,7 @@ class DashModelAdaptor(dict):
                 },
             )
             if "markdown" in plot:
-                children.append(make_md_div(plot["markdown"]))
+                children.append(dcc.Markdown(plot["markdown"]))
 
             children.append(graph)
 
@@ -342,7 +334,6 @@ class DashModelAdaptor(dict):
 
         for plot in model.plots:
             if "vars" in plot:
-
                 all_x_vals = []
                 all_y_vals = []
                 data = []
@@ -401,7 +392,6 @@ class DashModelAdaptor(dict):
                 result.append(figure)
 
             elif "fn" in plot:
-
                 xlims = plot["xlims"]
                 xdiff = xlims[1] - xlims[0]
                 exp = math.floor(math.log10(xdiff))
@@ -421,7 +411,14 @@ class DashModelAdaptor(dict):
                 if plot.get("ymin") is not None:
                     min_y = plot["ymin"]
 
-                data = [{"x": x_vals, "y": y_vals, "type": "scatter", "name": key,}]
+                data = [
+                    {
+                        "x": x_vals,
+                        "y": y_vals,
+                        "type": "scatter",
+                        "name": key,
+                    }
+                ]
                 figure = {
                     "data": data,
                     "layout": {
@@ -499,13 +496,16 @@ class DashModelAdaptor(dict):
                     html.Div(
                         [
                             dbc.Navbar(
-                                [self.make_models_dropdown_menu(), html.Div(),],
+                                [
+                                    self.make_models_dropdown_menu(),
+                                    html.Div(),
+                                ],
                                 dark=False,
                                 className="pl-0 mb-3",
                                 sticky="top",
                                 color="white",
                             ),
-                            make_md_div(
+                            dcc.Markdown(
                                 """
 
                             <br>
@@ -591,11 +591,11 @@ class DashModelAdaptor(dict):
         return slider_callback
 
     def register_callbacks(self, app):
-
         app.config["suppress_callback_exceptions"] = True
 
         @app.callback(
-            Output("content", "children"), [Input("url", "pathname")],
+            Output("content", "children"),
+            [Input("url", "pathname")],
         )
         def display_page(pathname):
             logger.info(f"display_page {pathname}")
@@ -615,7 +615,7 @@ class DashModelAdaptor(dict):
         for model in self.models:
             plot_outputs = [Output(p["id"], "figure") for p in model.plots]
             value_outputs = [
-                Output(f'{p["id"]}-value', "children") for p in model.editable_params
+                Output(f"{p['id']}-value", "children") for p in model.editable_params
             ]
             outputs = plot_outputs + value_outputs
             inputs = [Input(p["id"], "value") for p in model.editable_params]
@@ -623,15 +623,18 @@ class DashModelAdaptor(dict):
 
             inputs = [Input(f"{model.prefix}-reset", "n_clicks")]
             outputs = [Output(p["id"], "value") for p in model.editable_params]
+
             def make_reset_fn(model):
                 def fn(n_clicks):
                     keys = [p["key"] for p in model.editable_params]
                     return [model.init_param[k] for k in keys]
+
                 return fn
+
             app.callback(outputs, inputs)(make_reset_fn(model))
 
     def run_server(self, port=8050, is_debug=True):
-        self.app.run_server(debug=is_debug, port=port)
+        self.app.run(debug=is_debug, port=port)
 
 
 def open_url_in_background(url, sleep_in_s=1):

@@ -49,11 +49,26 @@ class GoodwinBusinessCycleModel(BaseModel):
 
     def setup_ui(self):
         self.editable_params = [
-            {"key": "time", "max": 500,},
-            {"key": "birthRate", "max": 0.1,},
-            {"key": "accelerator", "max": 5,},
-            {"key": "depreciation", "max": 0.1,},
-            {"key": "productivityRate", "max": 0.1,},
+            {
+                "key": "time",
+                "max": 500,
+            },
+            {
+                "key": "birthRate",
+                "max": 0.1,
+            },
+            {
+                "key": "accelerator",
+                "max": 5,
+            },
+            {
+                "key": "depreciation",
+                "max": 0.1,
+            },
+            {
+                "key": "productivityRate",
+                "max": 0.1,
+            },
         ]
 
         self.plots = [

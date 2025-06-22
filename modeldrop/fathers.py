@@ -45,7 +45,7 @@ class TurchinFathersAndSonsModel(BaseModel):
         for group in self.groups:
             vals = [self.var[n] for n in self.pops[group]]
             vals = [v for v in vals if v is not None]
-            self.aux_var[ f"{group}_total"] = sum(vals)
+            self.aux_var[f"{group}_total"] = sum(vals)
 
         i = int(self.param.delay / self.param.dt)
         self.aux_var.radical_total_delayed = 0
@@ -55,10 +55,13 @@ class TurchinFathersAndSonsModel(BaseModel):
             if len(self.solution[key]) > i:
                 self.aux_var.radical_total_delayed += self.solution[key][-i]
 
-        self.aux_var.rho = self.param.disenchantment * self.aux_var.radical_total_delayed
+        self.aux_var.rho = (
+            self.param.disenchantment * self.aux_var.radical_total_delayed
+        )
 
         self.aux_var.sigma = self.aux_var.radical_total * (
-            self.param.radicalisation - self.param.aversion * self.aux_var.moderate_total
+            self.param.radicalisation
+            - self.param.aversion * self.aux_var.moderate_total
         )
 
     def calc_dvars(self, t):
@@ -155,12 +158,27 @@ class TurchinFathersAndSonsModel(BaseModel):
                 "title": "All",
                 "vars": ["naive_total", "radical_total", "moderate_total"],
             },
-            {"title": "Naive Age Groups", "vars": self.pops.naive,},
-            {"title": "Radical Age Groups", "vars": self.pops.radical,},
-            {"title": "Moderate Age Groups", "vars": self.pops.moderate,},
+            {
+                "title": "Naive Age Groups",
+                "vars": self.pops.naive,
+            },
+            {
+                "title": "Radical Age Groups",
+                "vars": self.pops.radical,
+            },
+            {
+                "title": "Moderate Age Groups",
+                "vars": self.pops.moderate,
+            },
         ]
         self.editable_params = [
-            {"key": "time", "max": 500,},
-            {"key": "nAge", "max": 50,},
+            {
+                "key": "time",
+                "max": 500,
+            },
+            {
+                "key": "nAge",
+                "max": 50,
+            },
         ]
         self.extract_editable_params()

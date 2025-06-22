@@ -247,7 +247,10 @@ class TurchinEliteDemographicModel(BaseModel):
             },
         ]
         self.editable_params = [
-            {"key": "time", "max": 2000,},
+            {
+                "key": "time",
+                "max": 2000,
+            },
         ]
         self.extract_editable_params()
 

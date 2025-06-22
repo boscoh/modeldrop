@@ -7,9 +7,7 @@ def make_graphs_from_model(model, directory=".", transparent=False):
 
     graphs = []
     for plot in model.plots:
-
         if "title" in plot:
-
             basename, keys = "plot-" + plot["title"], plot["vars"]
             graph = {"basename": basename, "is_legend": True, "datasets": []}
             for key in keys:
@@ -23,7 +21,6 @@ def make_graphs_from_model(model, directory=".", transparent=False):
             graphs.append(graph)
 
         elif "fn" in plot:
-
             fn = plot["fn"]
             basename, xlims = "plot-" + fn, plot["xlims"]
             d = (xlims[1] - xlims[0]) / 100.0
