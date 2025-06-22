@@ -35,7 +35,7 @@ class BaseModel:
 
         self.fn = AttrDict()
 
-        self.integrate_method = "scipy_odeint_integrate"
+        self.integrate_method = "runge_kutta_integrate"
         self.param.time = 100
         self.param.dt = 1
         self.times = None
