@@ -97,26 +97,26 @@ class GoodwinBusinessCycleModel(BaseModel):
                     The relationship between labor and capital are determined
                     by these equations, which restate standard macro relationships 
                     
-                    ```math
+                    $$
                     output = labor \\times productivity
-                    ```
-                    ```math
+                    $$
+                    $$
                     capital = output \\times outputAccelerator
-                    ```
-                    ```math
+                    $$
+                    $$
                     \\frac{d}{dt}(capital) = investment - depreciationRate \\times capital
-                    ```
+                    $$
                     
-                    ```math
+                    $$
                     wages = labor \\times wage
-                    ```
+                    $$
                     
                     Productivity is assumed to increase steadily due to innovations in
                     technology:
                     
-                    ```math
+                    $$
                     \\frac{d}{dt}(productivity) = productivity \\times productivityGrowthRate
-                    ```
+                    $$
                     
                     Capitalists are assume to reinvest all their profits
                     back into the businesses.
@@ -132,9 +132,9 @@ class GoodwinBusinessCycleModel(BaseModel):
                 "markdown": """
                     The workers are modeled as a typical population, which grows exponentially:
                     
-                    ```math
+                    $$
                     \\frac{d}{dt}(population) = population \\times populationGrowthRate
-                    ```
+                    $$
                     """,
                 "title": "People",
                 "vars": ["population", "labor"],
@@ -147,9 +147,9 @@ class GoodwinBusinessCycleModel(BaseModel):
                     is modeled by the Keen wage change function that responds to
                     the labor fraction:
                     
-                    ```math
+                    $$
                     \\frac{d}{dt}(wage) = wage \\times wageChangeFn \\left[ laborFraction \\right]
-                    ```
+                    $$
                     """,
                 "fn": "wageChangeFn",
                 "xlims": [0.8, 0.995],

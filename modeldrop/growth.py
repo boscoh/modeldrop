@@ -32,9 +32,9 @@ class FundamentalPopulationModel(BaseModel):
                     growth equation at the heart of the system. This 
                     population will grow exponentially without limits.
                     
-                    ```math
+                    $$
                     \\frac{d}{dt}(population) = growthRate \\times population
-                    ``` 
+                    $$ 
 
                     """,
                 "title": "Exponential Growth",
@@ -52,7 +52,7 @@ class FundamentalPopulationModel(BaseModel):
                      a carrying capacity. This equation is known as the logistic
                      equation:
                      
-                     ```math
+                     $$
                      \\frac{d}{dt}(population) = 
                         growthRate 
                             \\times 
@@ -60,7 +60,7 @@ class FundamentalPopulationModel(BaseModel):
                                     1 - \\frac{population}{carryingCapacity} 
                                 \\right] 
                             \\times population
-                     ``` 
+                     $$ 
 
                      """,
                 "title": "Resource Constrained",

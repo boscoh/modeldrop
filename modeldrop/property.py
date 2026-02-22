@@ -117,35 +117,35 @@ class PropertyVsFundInvestmentModel(BaseModel):
                     The first thing to do is express the growth in a property price
                     as a standard growth equation:
                     
-                    ```math
+                    $$
                     \\frac{d}{dt}(property) = property \\times propertyGrowthRate
-                    ```
+                    $$
                     
                     We assume that you made a bank loan with a deposit, leaving you with 
                     a principal. Then the total interest paid is a growth equation based on 
                     the principal:
                     
-                    ```math
+                    $$
                     \\frac{d}{dt}(totalInterest) = principal \\times interestRate
-                    ```
+                    $$
                     
                     The principal will decline with a death rate
                     equal to the portion of the mortgage payment not eaten by 
                     interest repayments:
                     
-                    ```math
+                    $$
                     principalRepayment = payment - principal \\times interestRate
-                    ```
+                    $$
                     
-                    ```math
+                    $$
                     \\frac{d}{dt}(principal) = -principalRepayment
-                    ```
+                    $$
                     
                     The mortgage payment (per year) can be computed from this standard equation:
                     
-                    ```math
+                    $$
                     payment =  principal \\times \\frac{ interestRate}{1 - interestRate \\times (1 + interestRate)^{-years})}
-                    ```
+                    $$
                     """,
                 "title": "Property",
                 "vars": [
@@ -190,20 +190,20 @@ class PropertyVsFundInvestmentModel(BaseModel):
                     Then we take the standard mortgage payment as the equivalent of our income.
                     We put a chunk of that income into rent, where rents typically grows with inflation:
                     
-                    ```math
+                    $$
                     \\frac{d}{dt}(rent) = inflationRate \\times rent
-                    ```
+                    $$
                     
-                    ```math
+                    $$
                     \\frac{d}{dt}(totalRent) = rent
-                    ```
+                    $$
                     
                     And thus the fund payment is what is left over, giving the
                     fund growth equation:
                     
-                    ```math
+                    $$
                     \\frac{d}{dt}(fund) = payment - rent
-                    ```
+                    $$
 
                     """,
                 "title": "Fund",

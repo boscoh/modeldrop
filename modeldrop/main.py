@@ -1,7 +1,4 @@
-import logging
-import sys
-
-from modeldrop.app import DashModelAdaptor, open_url_in_background
+from modeldrop.app import DashModelAdaptor
 from modeldrop.demo import TurchinEliteDemographicModel
 from modeldrop.ecology import LoktaVolterraEcologyModel
 from modeldrop.epi import StandardThreePartEpidemiologyModel
@@ -13,31 +10,18 @@ from modeldrop.property import PropertyVsFundInvestmentModel
 from modeldrop.spring import ElasticSpringModel
 from modeldrop.turchin import TurchinDemographicStateModel
 
-dash = DashModelAdaptor(
-    [
-        FundamentalPopulationModel(),
-        ElasticSpringModel(),
-        LoktaVolterraEcologyModel(),
-        StandardThreePartEpidemiologyModel(),
-        GoodwinBusinessCycleModel(),
-        KeenDynamicEconomyModel(),
-        TurchinDemographicStateModel(),
-        TurchinEliteDemographicModel(),
-        TurchinFathersAndSonsModel(),
-        PropertyVsFundInvestmentModel(),
-    ],
-)
-server = dash.server
+MODEL_REGISTRY: dict[str, type] = {
+    "growth": FundamentalPopulationModel,
+    "spring": ElasticSpringModel,
+    "ecology": LoktaVolterraEcologyModel,
+    "epi": StandardThreePartEpidemiologyModel,
+    "goodwin": GoodwinBusinessCycleModel,
+    "keen": KeenDynamicEconomyModel,
+    "turchin": TurchinDemographicStateModel,
+    "demo": TurchinEliteDemographicModel,
+    "fathers": TurchinFathersAndSonsModel,
+    "property": PropertyVsFundInvestmentModel,
+}
 
-
-def main():
-    logging.basicConfig(level=logging.DEBUG)
-    port = "8050"
-    if "-o" in sys.argv:
-        open_url_in_background(f"http://127.0.0.1:{port}/")
-    is_debug = "-d" in sys.argv
-    dash.run_server(port=port, is_debug=is_debug)
-
-
-if __name__ == "__main__":
-    main()
+dash_app = DashModelAdaptor(list(cls() for cls in MODEL_REGISTRY.values()))
+server = dash_app.server  # for gunicorn

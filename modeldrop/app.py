@@ -1,27 +1,7 @@
-# -*- coding: utf-8 -*-
-"""
-Dash app to display channels data and stages.
-
-    > python app.py
-
-Then open the webbrowser at the indicated url address.
-
-Installation:
-
-    pip install dash==0.21.1
-    pip install dash-renderer==0.13.0
-    pip install dash-html-components==0.11.0
-    pip install dash-core-components==0.23.0
-    pip install plotly --upgrade
-    pip install dash-bootstrap-components
-
-"""
-
 import copy
 import logging
 import math
 import re
-import textwrap
 import threading
 import time
 import traceback
@@ -30,10 +10,8 @@ from pathlib import Path
 from urllib.request import urlopen
 
 import dash_bootstrap_components as dbc
-from dash import dcc
-from dash import html
 import numpy
-from dash import Dash
+from dash import Dash, dcc, html
 from dash.dependencies import Input, Output, State
 from dash.exceptions import PreventUpdate
 from flask import Flask, send_from_directory
@@ -41,15 +19,6 @@ from flask import Flask, send_from_directory
 from .basemodel import BaseModel
 
 logger = logging.getLogger(__name__)
-
-
-import markdown as md
-import markdown_katex
-
-
-def md_to_html(md_text):
-    md_text = textwrap.dedent(md_text)
-    return md.markdown(md_text, extensions=["markdown_katex"])
 
 
 millnames = ["", "k", "m", "b", "t"]
@@ -166,7 +135,9 @@ class DashModelAdaptor(dict):
         self.server = Flask(__name__)
 
         self.app = Dash(
-            __name__, external_stylesheets=[dbc.themes.BOOTSTRAP], server=self.server
+            __name__,
+            external_stylesheets=[dbc.themes.BOOTSTRAP],
+            server=self.server,
         )
 
         self.app.title = "modeldrop"
@@ -189,20 +160,25 @@ class DashModelAdaptor(dict):
                 return p
         return None
 
-    def make_models_dropdown_menu(self):
-        """Create a dropdown menu component with the assets."""
-        menu_items = [dbc.NavLink(f"Home", external_link=True, href=f"./")] + [
-            dbc.NavLink(f"{model.name}", external_link=True, href=f"./{model.prefix}")
+    def make_navbar(self):
+        """Sticky navbar with a dropdown of all models."""
+        items = [dbc.DropdownMenuItem("Home", href="./", external_link=True)] + [
+            dbc.DropdownMenuItem(model.name, href=f"./{model.prefix}", external_link=True)
             for model in self.models
         ]
-        return dbc.DropdownMenu(
-            children=menu_items,
-            className="pt-3 pb-2",
-            in_navbar=False,
-            nav=False,
-            label="modeldrop::models",
-            color="info",
-            style={"listStyleType": "none"},
+        return dbc.Navbar(
+            dbc.Container(
+                dbc.DropdownMenu(
+                    items,
+                    label="modeldrop::models",
+                    color="dark",
+                ),
+                fluid=True,
+                class_name="ps-0",
+            ),
+            sticky="top",
+            color="white",
+            className="mb-3",
         )
 
     def make_parameter_div(self):
@@ -257,7 +233,7 @@ class DashModelAdaptor(dict):
 
         return html.Div(
             children=children,
-            className="text-left pb-5",
+            className="text-start pb-5",
             style={
                 "fontSize": "0.8em",
                 "letterSpacing": "0.05em",
@@ -266,15 +242,7 @@ class DashModelAdaptor(dict):
         )
 
     def make_graphs_children(self):
-        result = [
-            dbc.Navbar(
-                [self.make_models_dropdown_menu()],
-                dark=False,
-                className="pl-0",
-                sticky="top",
-                color="white",
-            ),
-        ]
+        result = [self.make_navbar()]
 
         title = [html.H2(self.model.name, className="mt-5")]
         if hasattr(self.model, "url"):
@@ -303,7 +271,7 @@ class DashModelAdaptor(dict):
                 },
                 style={
                     "height": "405px",
-                    "max-width": "650px",
+                    "maxWidth": "650px",
                 },
                 animate=True,
                 animation_options={
@@ -313,7 +281,7 @@ class DashModelAdaptor(dict):
                 },
             )
             if "markdown" in plot:
-                children.append(dcc.Markdown(plot["markdown"]))
+                children.append(dcc.Markdown(plot["markdown"], mathjax=True))
 
             children.append(graph)
 
@@ -322,7 +290,7 @@ class DashModelAdaptor(dict):
                 children,
                 style={
                     "height": "calc(100vh - 80px)",
-                    "padding-right": "30px",
+                    "paddingRight": "30px",
                     "overflow": "scroll",
                 },
             )
@@ -461,12 +429,12 @@ class DashModelAdaptor(dict):
                         style={
                             "overflow": "scroll",
                             "boxSizing": "border-box",
-                            "padding-left": "30px",
-                            "padding-right": "0px",
+                            "paddingLeft": "30px",
+                            "paddingRight": "0px",
                             "height": "calc(100vh)",
                         },
                     ),
-                    className="pr-0",
+                    className="pe-0",
                     xs=8,
                     lg=9,
                     md=8,
@@ -476,9 +444,16 @@ class DashModelAdaptor(dict):
         )
 
     def make_home_content(self):
-        links = []
-        for model in self.models:
-            links.append(html.Li(html.A(f"{model.name}", href=f"./{model.prefix}")))
+        links = dbc.ListGroup(
+            [
+                dbc.ListGroupItem(
+                    model.name,
+                    href=f"./{model.prefix}",
+                    action=True,
+                )
+                for model in self.models
+            ],
+        )
         return dbc.Row(
             [
                 dbc.Col(
@@ -495,45 +470,37 @@ class DashModelAdaptor(dict):
                 dbc.Col(
                     html.Div(
                         [
-                            dbc.Navbar(
-                                [
-                                    self.make_models_dropdown_menu(),
-                                    html.Div(),
-                                ],
-                                dark=False,
-                                className="pl-0 mb-3",
-                                sticky="top",
-                                color="white",
-                            ),
+                            self.make_navbar(),
                             dcc.Markdown(
                                 """
-
-                            <br>
-
                             ### modeldrop
-                            
+
                             <br>
-                            
-                            Python library to explore dynamical models 
+
+                            Python library to explore dynamical models
                             with scipy and dash, with a focus on
                             dynamic population models.
-                            
+
                             <https://github.com/boscoh/modeldrop>
-                            
-                            Current Models
-                            """
+
+                            <br>
+
+                            #### Current Models
+                            """,
+                                dangerously_allow_html=True,
+                                style={"marginTop": "80px"},
                             ),
-                            html.Ul(links),
+                            links,
                             html.Br(),
                         ],
                         id="graphs",
                         style={
                             "overflow": "scroll",
                             "boxSizing": "border-box",
-                            "padding-left": "30px",
-                            "padding-right": "30px",
+                            "paddingLeft": "30px",
+                            "paddingRight": "30px",
                             "height": "calc(100vh)",
-                            "max-width": "600px",
+                            "maxWidth": "600px",
                         },
                     ),
                     xs=8,

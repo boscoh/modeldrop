@@ -46,22 +46,22 @@ class LoktaVolterraEcologyModel(BaseModel):
                     intrinsic prey birth rate and the predation rate at which 
                     the prey is caught and eaten by the predator: 
                      
-                    ```math
+                    $$
                     \\frac{d}{dt}(prey) = 
                         preyBirthRate \\times prey 
                          - predationRate \\times prey \\times predator
-                    ``` 
+                    $$ 
                     
                     The predator's growth rate depends on the digestion rate 
                     - how well the predator can digest the prey and grow a 
                     new predator. As well the predator will die by natural 
                     attrition through the predator death rate: 
                     
-                    ```math
+                    $$
                     \\frac{d}{dt}(predator) = 
                         - predatorDeathRate \\times predator
                         digestionRate \\times prey \\times predator 
-                    ```
+                    $$
 
                     """,
                 "title": "ecology",

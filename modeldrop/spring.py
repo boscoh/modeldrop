@@ -33,9 +33,9 @@ class ElasticSpringModel(BaseModel):
                     It is represented by this very simple
                     second order differential equation:
                     
-                    ```math
+                    $$
                     \\frac{d^{2}}{dt^{2}}(x) = - \\frac {4 \\pi^2}{period^2}   \\times x
-                    ```
+                    $$
                     
                     A simple transformation, gives the equivalent 
                     motion in terms of two first order
@@ -43,13 +43,13 @@ class ElasticSpringModel(BaseModel):
                     predator-prey relationship without the intrinsic 
                     growth factors:  
 
-                    ```math
+                    $$
                     \\frac{d}{dt}(v) = - \\frac {4 \\pi^2}{period^2} \\times x
-                    ``` 
+                    $$ 
 
-                    ```math
+                    $$
                     \\frac{d}{dt}(x) = v
-                    ``` 
+                    $$ 
                     """,
                 "title": "Spring",
                 "vars": ["x", "v"],

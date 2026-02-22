@@ -122,13 +122,13 @@ class TurchinEliteDemographicModel(BaseModel):
                     
                     The amount of resources produced is:
                     
-                    ```math
+                    $$
                     totalProduct = producer \\times productionRate
-                    ```
+                    $$
 
                     where the production rate can be improved by the
                     state through the production decline function (discussed below)
-                    ```math
+                    $$
                     productionRate = 
                          maxProductionRate
                          \\times 
@@ -136,28 +136,28 @@ class TurchinEliteDemographicModel(BaseModel):
                               1 - prodDeclineFn(state)
                                \\times producer
                             \\right]
-                    ```
+                    $$
                     
                     Here, we use a greedy elite model where all the product will
                     be extracted if the elite numbers grows large enough, leading to
                     the elite fraction for the total product:
                     
-                    ```math
+                    $$
                     eliteFraction = 
                       \\frac
                         { elite }
                         {1 - eliteAtHalfExtraction \\times elite}
-                    ```
+                    $$
                                         
-                    ```math
+                    $$
                     eliteShare = totalProduct \\times eliteFraction
-                    ```
+                    $$
                     
                     This leaves the producers:
                     
-                    ```math
+                    $$
                     producerShare = totalProduct - eliteShare
-                    ```
+                    $$
                     
                     """,
                 "title": "Production Rate",
@@ -215,30 +215,30 @@ class TurchinEliteDemographicModel(BaseModel):
                     the state can impose peace on the elites, and this is reflected 
                     in: 
                     
-                    ```math
+                    $$
                     stateModifiedFraction = 1 
                         - 
                         \\frac
                             {state}
                             {stateAtHalfPeace + state}
-                    ```
+                    $$
                     
                     resulting in a lower elite death rate:
                     
-                    ```math
+                    $$
                     eliteDeathRate = maxEliteDeath
                         \\times stateModifiedFraction
-                    ```
+                    $$
                     
                     The deaths of elites obviously depends also
                     on the number of elites that have managed
                     to grow due to extraction of resources from
                     the producers:
                     
-                    ```math
+                    $$
                     eliteDeath = elite 
                         \\times eliteDeathRate
-                    ```
+                    $$
                     
                     """,
                 "title": "State Action on Elites",

@@ -54,12 +54,12 @@ class TurchinDemographicStateModel(BaseModel):
                     First, we have a population that grows depending
                     on the amount of surplus, or food that is produced:                    from paying taxes to the state:
                     
-                    ```math
+                    $$
                     \\frac{d}{dt}(population) = 
                         populationGrowthRate 
                         \\times population 
                         \\times surplus 
-                    ```
+                    $$
                     
                     The population will rise and fall depending on the
                     surplus produced, which will depend on  
@@ -76,9 +76,9 @@ class TurchinDemographicStateModel(BaseModel):
                     increasing function that saturates to a given carrying
                     capacity, beyond which the carrying capacity cannot be improved
     
-                    ```math
+                    $$
                     carryingCapacityFunction = 1 + capacityDiff \\times \\left( \\frac{revenue}{ revenueAtHalfCapacity + revenue}  \\right)
-                    ```
+                    $$
                 """,
                 "fn": "carryingCapacityFn",
                 "xlims": [0, 100],
@@ -93,13 +93,13 @@ class TurchinDemographicStateModel(BaseModel):
                     population rises above the carrying capacity, crops will 
                     fail and the surplus will go negative:                    
                     
-                    ```math
+                    $$
                     surplus = maxSurplus 
                         \\times \\left(  
                             1 - 
                             \\frac{ population } { carryingCapacity } 
                         \\right) 
-                    ```
+                    $$
 
                     This results in the changes of the surplus over time
                     due to the intervention of the state in improving
@@ -116,9 +116,9 @@ class TurchinDemographicStateModel(BaseModel):
                     well, the state is assume to spend some of the revenue on 
                     the population, and this is the expenditure.
                     
-                    ```math
+                    $$
                     \\frac{d}{dt}(revenue) = tax \\times population \\times surplus - expenditurePerCapita * population
-                    ```
+                    $$
                     """,
                 "title": "State Revenue",
                 "vars": ["stateRevenue"],

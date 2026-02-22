@@ -102,13 +102,13 @@ class TurchinFathersAndSonsModel(BaseModel):
                     
                 The model carries a number of age groups for each category of people.
                 
-                ```math
+                $$
                 naive_0, naive_1, ..., naive_{nAge}
                 \\newline
                 radical_0, radical_1, ..., radical_{nAge}
                 \\newline
                 moderate_0, moderate_1, ..., moderate_{nAge}
-                ```
+                $$
                    
                 Naive people are radicalized by the radicalization rate R,
                 which is proportional to the number of radicals 
@@ -116,44 +116,44 @@ class TurchinFathersAndSonsModel(BaseModel):
                  are sufficient number of moderates, who are adverse to
                  radicalisation:
                 
-                ```math
+                $$
                 R = (
                     radicalisation 
                     - aversion \\times \\sum_{age} moderate_{age}
                     ) 
                     \\times  \\sum_{age} radical_{age} 
-                ```
+                $$
 
                 Radicals are disenchanted after a delay of a certain number of years
                 of being extremists, and this rate D defines the movement of radicals 
                 to moderate:  
                 
-                ```math
+                $$
                 D = disenchantment \\times \\sum_{age} radical_{age}(t_{delay})
-                ```
+                $$
 
                 Thus the changes for each age in each category is a progression of each
                 age group to the next age group over a unit of time (1 year), with
                 a conservative dispersal to different categories depending on R and D.
                 
-                ```math
+                $$
                 \\frac{d}{dt}(naive_{age}) = 
                     - naive_{age} + naive_{age - 1} \\times ( 1 - R)
-                ```
+                $$
                 
-                ```math
+                $$
                 \\frac{d}{dt}(radical_{age}) = 
                     - radical_{age} 
                     + radical_{age - 1} \\times ( 1 - D)
                     + naive_{age - 1} \\times R
-                ```
+                $$
 
-                ```math
+                $$
                 \\frac{d}{dt}(moderate_{age}) = 
                     - moderate_{age} 
                     + moderate_{age - 1} 
                     + radical_{age - 1} \\times D
-                ```
+                $$
                 """,
                 "title": "All",
                 "vars": ["naive_total", "radical_total", "moderate_total"],
